@@ -1,0 +1,3936 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>无感FOC教学页</title>
+  <style>
+    :root {
+      --bg: #eef3f7;
+      --surface: rgba(255, 255, 255, 0.84);
+      --surface-strong: #ffffff;
+      --ink: #11202d;
+      --muted: #4f6476;
+      --line: rgba(17, 32, 45, 0.12);
+      --accent: #0b7fab;
+      --accent-2: #f28f3b;
+      --accent-3: #1e9f7a;
+      --accent-4: #7f56d9;
+      --accent-5: #e04f8a;
+      --accent-6: #d6a300;
+      --danger: #c1504d;
+      --shadow: 0 18px 44px rgba(18, 41, 56, 0.12);
+      --radius: 20px;
+      --max: 100%;
+      --code: #d9eef7;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Aptos", "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(11, 127, 171, 0.18), transparent 32%),
+        radial-gradient(circle at top right, rgba(242, 143, 59, 0.16), transparent 28%),
+        linear-gradient(180deg, #f8fbfd 0%, var(--bg) 100%);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(17, 32, 45, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(17, 32, 45, 0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      pointer-events: none;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.15));
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .site {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 292px minmax(0, 1fr);
+      gap: 14px;
+      min-height: 100vh;
+      padding: 18px 14px 18px 18px;
+    }
+
+    .lesson-sidebar {
+      position: sticky;
+      top: 18px;
+      height: calc(100vh - 36px);
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 16px;
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(17, 32, 45, 0.1);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .sidebar-title {
+      display: grid;
+      gap: 8px;
+    }
+
+    .sidebar-title b {
+      font-size: 19px;
+    }
+
+    .sidebar-title span,
+    .sidebar-card,
+    .page-count {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .page-count {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(11, 127, 171, 0.08);
+      color: #134864;
+      font-weight: 700;
+    }
+
+    .lesson-menu {
+      display: grid;
+      align-content: start;
+      gap: 8px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .lesson-link {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      text-decoration: none;
+      border: 1px solid rgba(17, 32, 45, 0.08);
+      background: rgba(248, 251, 253, 0.88);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease;
+    }
+
+    .lesson-link::before {
+      content: attr(data-index);
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--page-color, var(--accent));
+      font-size: 12px;
+    }
+
+    .lesson-link.active {
+      color: var(--ink);
+      border-color: color-mix(in srgb, var(--page-color, var(--accent)) 55%, transparent);
+      background: linear-gradient(120deg, color-mix(in srgb, var(--page-color, var(--accent)) 18%, white), rgba(255, 255, 255, 0.92));
+      transform: translateX(2px);
+      box-shadow: 0 10px 24px rgba(17, 32, 45, 0.1);
+    }
+
+    .sidebar-card {
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(17, 32, 45, 0.08);
+      background: linear-gradient(135deg, rgba(242, 143, 59, 0.14), rgba(30, 159, 122, 0.12));
+    }
+
+    .lesson-workspace {
+      min-width: 0;
+      height: calc(100vh - 36px);
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      padding-right: 8px;
+    }
+
+    .lesson-page {
+      display: none;
+    }
+
+    .lesson-page.active {
+      display: block;
+      animation: pageIn 180ms ease-out;
+    }
+
+    @keyframes pageIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero {
+      padding: 0 0 18px;
+    }
+
+    .hero-inner,
+    .section-inner,
+    .footer-inner {
+      width: min(100%, var(--max));
+      margin: 0 auto;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .hero-copy,
+    .hero-media {
+      min-width: 0;
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .hero-copy {
+      padding: 34px 34px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(11, 127, 171, 0.1);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: clamp(34px, 5.3vw, 62px);
+      max-width: 12ch;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 64ch;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .hero-actions,
+    .quick-jumps,
+    .chip-row,
+    .pill-row,
+    .step-list,
+    .bench-tabs,
+    .file-tabs,
+    .quiz-actions,
+    .nav-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .button,
+    .mini-button,
+    .jump,
+    .step-button,
+    .tab-button {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      border-radius: 999px;
+      transition: transform 160ms ease, background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .button {
+      padding: 14px 20px;
+      background: linear-gradient(120deg, var(--accent), #0f9bc4);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 10px 28px rgba(11, 127, 171, 0.22);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .button.alt {
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--ink);
+      box-shadow: none;
+      border: 1px solid rgba(17, 32, 45, 0.12);
+    }
+
+    .button:hover,
+    .mini-button:hover,
+    .jump:hover,
+    .step-button:hover,
+    .tab-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .chip {
+      min-width: 136px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(17, 32, 45, 0.08);
+    }
+
+    .chip b {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    .chip span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .hero-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      min-height: 100%;
+    }
+
+    .overview-flow {
+      margin-top: 18px;
+      --page-color: var(--accent-4);
+    }
+
+    .flowchart-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .flowchart-frame {
+      display: block;
+      overflow: auto;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(17, 32, 45, 0.12);
+      background: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+    }
+
+    .flowchart-hint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(11, 127, 171, 0.18);
+      border-radius: 12px;
+      background: linear-gradient(120deg, rgba(217, 238, 247, 0.92), rgba(255, 255, 255, 0.9));
+      color: #17465d;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .flowchart-hint::before {
+      content: "提示";
+      flex: 0 0 auto;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      letter-spacing: 0;
+    }
+
+    .flowchart-stage {
+      position: relative;
+      min-width: 860px;
+    }
+
+    .flowchart-stage img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+    }
+
+    .flow-hotspot {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      width: var(--w);
+      height: var(--h);
+      z-index: 2;
+      display: block;
+      border: 2px solid color-mix(in srgb, var(--hotspot-color, var(--accent)) 52%, transparent);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--hotspot-color, var(--accent)) 10%, transparent);
+      color: var(--ink);
+      cursor: pointer;
+      text-decoration: none;
+      opacity: 0.72;
+      transition: transform 160ms ease, opacity 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .flow-hotspot span {
+      display: none;
+    }
+
+    .flow-hotspot:hover,
+    .flow-hotspot:focus-visible {
+      opacity: 1;
+      transform: translateY(-1px);
+      border-color: color-mix(in srgb, var(--hotspot-color, var(--accent)) 82%, white);
+      background: color-mix(in srgb, var(--hotspot-color, var(--accent)) 22%, transparent);
+    }
+
+    .flow-hotspot:focus-visible {
+      outline: 3px solid rgba(11, 127, 171, 0.28);
+      outline-offset: 3px;
+    }
+
+    .flow-reader {
+      display: grid;
+      gap: 10px;
+    }
+
+    .flow-reader h3 {
+      font-size: 24px;
+    }
+
+    .flow-reader p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .flow-reader-item {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(17, 32, 45, 0.08);
+      background: linear-gradient(120deg, rgba(255, 255, 255, 0.9), color-mix(in srgb, var(--item-color, var(--accent)) 12%, white));
+    }
+
+    .flow-reader-item b {
+      display: block;
+      color: color-mix(in srgb, var(--item-color, var(--accent)) 72%, var(--ink));
+      margin-bottom: 5px;
+    }
+
+    .flow-reader-item span {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .sections {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 0 0 18px;
+    }
+
+    .section {
+      padding: 0 0 18px;
+    }
+
+    .section-band {
+      background: var(--surface);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.48);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section-band::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 7px;
+      background: var(--page-color, var(--accent));
+    }
+
+    .section-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .section-kicker {
+      color: var(--page-color, var(--accent));
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 74ch;
+    }
+
+    .nav-row {
+      margin-top: 12px;
+    }
+
+    .jump,
+    .step-button,
+    .tab-button,
+    .mini-button {
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(17, 32, 45, 0.12);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .jump.active,
+    .step-button.active,
+    .tab-button.active,
+    .mini-button.active {
+      background: var(--page-color, var(--ink));
+      color: #fff;
+      border-color: var(--page-color, var(--ink));
+      box-shadow: 0 10px 26px rgba(17, 32, 45, 0.18);
+    }
+
+    #overview {
+      --page-color: var(--accent);
+    }
+
+    #pipeline {
+      --page-color: var(--accent);
+    }
+
+    #profiling {
+      --page-color: #00a3a3;
+    }
+
+    #transform-lab {
+      --page-color: var(--accent-2);
+    }
+
+    #observer {
+      --page-color: var(--accent-4);
+    }
+
+    #startup {
+      --page-color: var(--accent-3);
+    }
+
+    #code-map {
+      --page-color: var(--accent-5);
+    }
+
+    #tuning {
+      --page-color: var(--accent-6);
+    }
+
+    #quiz {
+      --page-color: var(--danger);
+    }
+
+    .focus-grid,
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .focus-card,
+    .chart-card {
+      border-radius: 18px;
+      border: 1px solid rgba(17, 32, 45, 0.08);
+      background: linear-gradient(150deg, rgba(255, 255, 255, 0.9), color-mix(in srgb, var(--card-color, var(--page-color)) 14%, white));
+      padding: 18px;
+    }
+
+    .focus-card b,
+    .chart-card h3 {
+      display: block;
+      margin-bottom: 8px;
+      color: color-mix(in srgb, var(--card-color, var(--page-color)) 70%, var(--ink));
+    }
+
+    .focus-card span,
+    .chart-card p {
+      color: var(--muted);
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    .chart-card {
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .chart-card h3 {
+      font-size: 19px;
+      line-height: 1.25;
+    }
+
+    .chart-grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .chart-grid.full {
+      grid-template-columns: 1fr;
+    }
+
+    .pipeline {
+      display: grid;
+      gap: 18px;
+    }
+
+    .pipeline-track {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .pipeline-step {
+      min-height: 112px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), color-mix(in srgb, var(--accent) 9%, white));
+      cursor: pointer;
+      transition: transform 150ms ease, border-color 150ms ease, background-color 150ms ease;
+    }
+
+    .pipeline-step.active {
+      border-color: color-mix(in srgb, var(--page-color, var(--accent)) 55%, transparent);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--page-color, var(--accent)) 22%, white), rgba(255, 255, 255, 0.96));
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px color-mix(in srgb, var(--page-color, var(--accent)) 18%, transparent);
+    }
+
+    .pipeline-step small {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .pipeline-step strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .pipeline-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .detail-panel,
+    .lab-grid,
+    .observer-grid,
+    .startup-grid,
+    .code-grid,
+    .bench-grid,
+    .quiz-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .detail-panel {
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+
+    .panel {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.76);
+      padding: 20px;
+      min-width: 0;
+    }
+
+    .panel h3 {
+      margin-bottom: 10px;
+      font-size: 24px;
+    }
+
+    .panel p,
+    .panel li {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .panel ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .kv {
+      display: grid;
+      gap: 10px;
+    }
+
+    .kv-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed rgba(17, 32, 45, 0.12);
+    }
+
+    .kv-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .kv-row b {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .formula {
+      display: inline-block;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: #10283a;
+      color: #f0f7fb;
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 14px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .lab-grid {
+      grid-template-columns: 0.92fr 1.08fr;
+      align-items: start;
+    }
+
+    .controls {
+      display: grid;
+      gap: 14px;
+    }
+
+    .control {
+      display: grid;
+      gap: 8px;
+    }
+
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    .control label span {
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .value-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .value-box {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(242, 248, 251, 0.94);
+      border: 1px solid rgba(17, 32, 45, 0.08);
+    }
+
+    .value-box b {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .value-box span {
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 18px;
+    }
+
+    .transform-inline-charts {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(17, 32, 45, 0.1);
+    }
+
+    .transform-inline-chart {
+      display: grid;
+      gap: 8px;
+    }
+
+    .transform-inline-chart h3 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.25;
+      color: color-mix(in srgb, var(--accent-2) 72%, var(--ink));
+    }
+
+    .transform-inline-chart p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    canvas {
+      width: 100%;
+      display: block;
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(241, 247, 250, 0.98));
+      border: 1px solid rgba(17, 32, 45, 0.08);
+    }
+
+    .canvas-caption {
+      margin-top: 12px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .observer-grid {
+      grid-template-columns: 0.9fr 1.1fr;
+      align-items: start;
+    }
+
+    .observer-readout {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .status {
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(17, 32, 45, 0.08);
+    }
+
+    .status.good {
+      border-color: rgba(30, 159, 122, 0.22);
+      background: rgba(234, 248, 244, 0.92);
+    }
+
+    .status.warn {
+      border-color: rgba(242, 143, 59, 0.3);
+      background: rgba(255, 245, 233, 0.92);
+    }
+
+    .status.bad {
+      border-color: rgba(193, 80, 77, 0.26);
+      background: rgba(252, 240, 239, 0.94);
+    }
+
+    .status b {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .status span {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .startup-grid {
+      grid-template-columns: 300px 1fr;
+    }
+
+    .step-list {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .step-button {
+      width: 100%;
+      text-align: left;
+      border-radius: 18px;
+      padding: 14px 16px;
+    }
+
+    .step-button small {
+      display: block;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .step-button.active small {
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .timeline {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .timeline div {
+      min-height: 80px;
+      padding: 12px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(247, 250, 252, 0.94), color-mix(in srgb, var(--accent-3) 8%, white));
+      border: 1px solid rgba(17, 32, 45, 0.08);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .timeline div strong {
+      display: block;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .startup-chart-inline {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(17, 32, 45, 0.1);
+    }
+
+    .startup-chart-inline h3 {
+      margin-bottom: 10px;
+      color: color-mix(in srgb, var(--accent-3) 72%, var(--ink));
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .startup-chart-inline p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .code-grid {
+      grid-template-columns: minmax(320px, 0.36fr) minmax(0, 1fr);
+    }
+
+    .observer-choice-stack {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .observer-compare-grid {
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+
+    .observer-compare-grid .code-line {
+      min-height: 126px;
+    }
+
+    .observer-reason-body {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.92fr) minmax(320px, 1.08fr);
+      gap: 18px;
+      align-items: start;
+      margin-top: 12px;
+    }
+
+    .observer-reason-body .formula {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .file-tabs {
+      flex-direction: column;
+    }
+
+    .tab-button {
+      width: 100%;
+      text-align: left;
+      border-radius: 18px;
+      padding: 14px 16px;
+    }
+
+    .code-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .code-line {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: linear-gradient(120deg, rgba(244, 250, 252, 0.95), color-mix(in srgb, var(--page-color, var(--accent)) 8%, white));
+      border: 1px solid rgba(17, 32, 45, 0.08);
+    }
+
+    .code-line code {
+      display: block;
+      margin-top: 4px;
+      font-family: "Cascadia Code", "Consolas", monospace;
+      color: #134864;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .bench-grid {
+      grid-template-columns: 280px 1fr;
+    }
+
+    .bench-tabs {
+      flex-direction: column;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .checklist label {
+      display: flex;
+      gap: 12px;
+      align-items: start;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(17, 32, 45, 0.08);
+      background: rgba(250, 252, 253, 0.96);
+      color: var(--muted);
+    }
+
+    .checklist input {
+      margin-top: 3px;
+      accent-color: var(--accent-3);
+    }
+
+    .bench-table {
+      margin-top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .bench-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 1fr;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid rgba(17, 32, 45, 0.08);
+    }
+
+    .bench-row b {
+      color: var(--ink);
+    }
+
+    .bench-row span {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .quiz-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .quiz-card {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(17, 32, 45, 0.08);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(252, 240, 239, 0.62));
+      display: grid;
+      gap: 12px;
+    }
+
+    .quiz-card h3 {
+      font-size: 20px;
+    }
+
+    .quiz-options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .quiz-option {
+      display: flex;
+      gap: 10px;
+      align-items: start;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(247, 250, 252, 0.94);
+      border: 1px solid rgba(17, 32, 45, 0.08);
+      color: var(--muted);
+    }
+
+    .quiz-feedback {
+      min-height: 48px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(244, 250, 252, 0.95);
+      border: 1px solid rgba(17, 32, 45, 0.08);
+      color: var(--muted);
+    }
+
+    .quiz-feedback.correct {
+      background: rgba(234, 248, 244, 0.92);
+      border-color: rgba(30, 159, 122, 0.22);
+      color: var(--ink);
+    }
+
+    .quiz-feedback.wrong {
+      background: rgba(252, 240, 239, 0.94);
+      border-color: rgba(193, 80, 77, 0.24);
+      color: var(--ink);
+    }
+
+    .footer {
+      padding: 0 0 6px;
+    }
+
+    .footer-inner {
+      padding: 22px 28px;
+      border-radius: var(--radius);
+      background: rgba(16, 40, 58, 0.94);
+      color: rgba(240, 247, 251, 0.88);
+    }
+
+    .footer code {
+      color: var(--code);
+    }
+
+    @media (max-width: 1080px) {
+      body {
+        overflow: auto;
+      }
+
+      .site {
+        grid-template-columns: 1fr;
+        padding: 12px;
+      }
+
+      .lesson-sidebar {
+        position: sticky;
+        top: 12px;
+        z-index: 5;
+        height: auto;
+        grid-template-rows: auto auto;
+      }
+
+      .lesson-menu {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        overflow: visible;
+      }
+
+      .sidebar-card {
+        display: none;
+      }
+
+      .lesson-workspace {
+        height: auto;
+        overflow: visible;
+        padding-right: 0;
+      }
+
+      .hero-grid,
+      .flowchart-card,
+      .detail-panel,
+      .lab-grid,
+      .observer-grid,
+      .startup-grid,
+      .code-grid,
+      .bench-grid,
+      .quiz-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pipeline-track {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .timeline {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .bench-row {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-grid,
+      .chart-grid.two,
+      .focus-grid,
+      .observer-compare-grid,
+      .observer-reason-body {
+        grid-template-columns: 1fr;
+      }
+
+      .flowchart-stage {
+        width: 1040px;
+        max-width: none;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .site {
+        padding: 10px;
+      }
+
+      .lesson-sidebar {
+        padding: 12px;
+      }
+
+      .lesson-menu {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .lesson-link {
+        grid-template-columns: 24px 1fr;
+        min-height: 44px;
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+
+      .lesson-link::before {
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
+      }
+
+      .hero-copy,
+      .section-band,
+      .footer-inner {
+        padding: 20px;
+      }
+
+      h1 {
+        max-width: none;
+      }
+
+      .pipeline-track,
+      .timeline,
+      .value-grid,
+      .observer-readout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="site">
+    <aside class="lesson-sidebar" aria-label="无感FOC教学目录">
+      <div class="sidebar-title">
+        <div class="eyebrow">Course Map</div>
+        <b>无感 FOC 教学目录</b>
+        <span>按左侧目录切换页面。每页只讲一个主题，避免一路划到底。</span>
+      </div>
+      <div class="page-count">
+        <span id="pageCount">01 / 09</span>
+        <span id="pageTitle">总览</span>
+      </div>
+      <nav class="lesson-menu">
+        <a class="lesson-link active" data-index="01" data-page-link="overview" href="#overview" style="--page-color:#0b7fab">总览</a>
+        <a class="lesson-link" data-index="02" data-page-link="pipeline" href="#pipeline" style="--page-color:#0b7fab">20 kHz 执行链</a>
+        <a class="lesson-link" data-index="03" data-page-link="profiling" href="#profiling" style="--page-color:#00a3a3">耗时实测</a>
+        <a class="lesson-link" data-index="04" data-page-link="transform-lab" href="#transform-lab" style="--page-color:#f28f3b">坐标变换</a>
+        <a class="lesson-link" data-index="05" data-page-link="observer" href="#observer" style="--page-color:#7f56d9">滑模观测器</a>
+        <a class="lesson-link" data-index="06" data-page-link="startup" href="#startup" style="--page-color:#1e9f7a">启动与切环</a>
+        <a class="lesson-link" data-index="07" data-page-link="code-map" href="#code-map" style="--page-color:#e04f8a">工程文件</a>
+        <a class="lesson-link" data-index="08" data-page-link="tuning" href="#tuning" style="--page-color:#d6a300">调参与台架</a>
+        <a class="lesson-link" data-index="09" data-page-link="quiz" href="#quiz" style="--page-color:#c1504d">自测</a>
+      </nav>
+      <div class="sidebar-card">
+        重点阅读顺序：先看快环时序，再看坐标变换和观测器，最后再进入启动切环和调参。
+      </div>
+    </aside>
+
+    <div class="lesson-workspace" id="lessonWorkspace">
+    <header class="hero lesson-page active" id="overview" data-page-title="总览">
+      <div class="hero-inner">
+        <div class="hero-grid">
+          <section class="hero-copy">
+            <div class="eyebrow">Sensorless FOC / RA6T2 Project</div>
+            <h1>基于实际工程的无感FOC</h1>
+            <p class="lead">
+              这不是通用课件，而是把当前工程里的启动状态机、坐标变换、滑模观测器、角度估算和调参路径拆开讲清楚。页面内的流程、函数名、参数值和调试口都直接来自这份代码。
+            </p>
+
+            <div class="hero-actions">
+              <a class="button" href="#pipeline">从快环流程开始</a>
+              <a class="button alt" href="#observer">直接看观测器与调参</a>
+            </div>
+
+            <div class="chip-row">
+              <div class="chip">
+                <b>20 kHz / 50 us</b>
+                <span>PWM 快环与 ADC 中断周期，来自 <code>PWM_FREQUENCY</code> 与 <code>PWM_PERIOD_T</code>。</span>
+              </div>
+              <div class="chip">
+                <b>2 us 死区</b>
+                <span><code>DEAD_TIME = 240</code>，对应 GPT 120 MHz 计数时钟。</span>
+              </div>
+              <div class="chip">
+                <b>SMO 参数</b>
+                <span><code>OBSERVER_S_MAX_VALUE = 170</code>，<code>OBSERVER_K_SLIDE = 30000</code>。</span>
+              </div>
+              <div class="chip">
+                <b>启动结构</b>
+                <span>预充电 -> 双步预定位 -> 开环强拖 -> 无感闭环。</span>
+              </div>
+            </div>
+          </section>
+
+          <figure class="hero-media">
+            <img src="assets/foc-hero.png" alt="无感FOC教学页面主视觉">
+          </figure>
+        </div>
+
+        <section class="section-band overview-flow">
+          <div class="section-head">
+            <div class="section-kicker">总流程框图</div>
+            <h2>先把无感 FOC 看成三条闭环链路</h2>
+            <p>
+              这张图放在首页作为全局地图。后面的坐标变换、滑模观测器、启动切环和调参，都是围绕这张图里的信号流展开：上面是控制输出链，右侧是功率驱动链，下面是电流与角度反馈链。
+            </p>
+          </div>
+          <div class="flowchart-card">
+            <div>
+              <div class="flowchart-hint">点击流程图中的浅色描边模块，可以跳转到对应的教学页。</div>
+              <div class="flowchart-frame" aria-label="可交互无感FOC完整流程框图">
+                <div class="flowchart-stage">
+                  <img src="assets/sensorless-foc-flowchart.png" alt="无感FOC完整流程框图">
+                  <a class="flow-hotspot" href="#tuning" style="--x:14.45%;--y:12.75%;--w:6.70%;--h:4.10%;--hotspot-color:#d6a300;" aria-label="跳转到调参与台架页面，查看速度PI"><span>速度 PI</span></a>
+                  <a class="flow-hotspot" href="#tuning" style="--x:32.40%;--y:12.75%;--w:6.70%;--h:11.00%;--hotspot-color:#d6a300;" aria-label="跳转到调参与台架页面，查看电流PI"><span>电流 PI</span></a>
+                  <a class="flow-hotspot" href="#transform-lab" style="--x:42.85%;--y:11.15%;--w:6.75%;--h:14.30%;--hotspot-color:#f28f3b;" aria-label="跳转到坐标变换页面，查看反Park与矢量合成"><span>反 Park</span></a>
+                  <a class="flow-hotspot" href="#transform-lab" style="--x:49.35%;--y:32.15%;--w:3.60%;--h:11.70%;--hotspot-color:#f28f3b;" aria-label="跳转到坐标变换页面，查看矢量分解"><span>矢量分解</span></a>
+                  <a class="flow-hotspot" href="#pipeline" style="--x:55.85%;--y:6.45%;--w:7.90%;--h:25.80%;--hotspot-color:#0b7fab;" aria-label="跳转到20kHz执行链页面，查看SVPWM模块"><span>SVPWM</span></a>
+                  <a class="flow-hotspot" href="#pipeline" style="--x:68.80%;--y:6.45%;--w:7.90%;--h:25.80%;--hotspot-color:#0b7fab;" aria-label="跳转到20kHz执行链页面，查看驱动电路"><span>Driver</span></a>
+                  <a class="flow-hotspot" href="#pipeline" style="--x:81.50%;--y:6.45%;--w:7.95%;--h:25.80%;--hotspot-color:#0b7fab;" aria-label="跳转到20kHz执行链页面，查看三相逆变电路"><span>三相逆变</span></a>
+                  <a class="flow-hotspot" href="#startup" style="--x:93.35%;--y:13.10%;--w:5.60%;--h:12.60%;--hotspot-color:#1e9f7a;" aria-label="跳转到启动与切环页面，查看电机闭环过程"><span>PMSM</span></a>
+                  <a class="flow-hotspot" href="#transform-lab" style="--x:68.80%;--y:56.40%;--w:7.90%;--h:20.60%;--hotspot-color:#f28f3b;" aria-label="跳转到坐标变换页面，查看Clarke变换"><span>Clarke</span></a>
+                  <a class="flow-hotspot" href="#transform-lab" style="--x:34.10%;--y:56.40%;--w:8.20%;--h:20.60%;--hotspot-color:#f28f3b;" aria-label="跳转到坐标变换页面，查看Park变换"><span>Park</span></a>
+                  <a class="flow-hotspot" href="#observer" style="--x:47.55%;--y:83.00%;--w:6.95%;--h:12.70%;--hotspot-color:#7f56d9;" aria-label="跳转到滑模观测器页面，查看转子角度和速度估计"><span>SMO</span></a>
+                </div>
+              </div>
+            </div>
+            <div class="flow-reader">
+              <h3>按这个顺序读图</h3>
+              <p>不要从左到右硬读，FOC 是闭环系统。先分清功率链、采样链、角度链和控制链。</p>
+              <div class="flow-reader-item" style="--item-color:#d6a300;">
+                <b>1. 功率链</b>
+                <span><code>SVPWM -> driver -> 三相逆变 -> PMSM</code>，这是最终把控制量变成三相电压的路径。</span>
+              </div>
+              <div class="flow-reader-item" style="--item-color:#f28f3b;">
+                <b>2. 电流反馈链</b>
+                <span><code>Ia/Ib/Ic -> Clarke -> Iα/Iβ -> Park -> Id/Iq</code>，这是电流环能闭上的基础。</span>
+              </div>
+              <div class="flow-reader-item" style="--item-color:#7f56d9;">
+                <b>3. 无感角度链</b>
+                <span><code>Iα/Iβ + Uα/Uβ -> 滑模观测器 -> θr/ω</code>，估出的角度决定 d/q 轴摆在哪里。</span>
+              </div>
+              <div class="flow-reader-item" style="--item-color:#1e9f7a;">
+                <b>4. 控制输出链</b>
+                <span><code>速度 PI -> Iq_ref</code>，<code>Id_ref=0</code>，两个电流 PI 输出 <code>Ud/Uq</code>，再反 Park 或矢量合成送入 SVPWM。</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </header>
+
+    <main class="sections">
+      <section class="section lesson-page" id="pipeline" data-page-title="20 kHz 执行链">
+        <div class="section-inner section-band">
+          <div class="section-head">
+            <div class="section-kicker">快环</div>
+            <h2>20 kHz 执行链</h2>
+            <p>
+              当前工程不是在 <code>while(1)</code> 里跑控制，而是在 ADC0 扫描完成中断里每 50 us 执行一次完整快环。点击下面任一步，右侧会显示该步的输入、输出、关键变量和代码位置。
+            </p>
+            <div class="nav-row">
+              <a class="jump" href="#transform-lab">看坐标变换实验</a>
+              <a class="jump" href="#startup">看启动切换流程</a>
+              <a class="jump" href="#code-map">看文件地图</a>
+            </div>
+          </div>
+
+          <div class="chart-grid two">
+            <article class="chart-card" style="--card-color: var(--accent);">
+              <h3>50 us 快环时间预算示意</h3>
+              <canvas id="fastLoopChart" width="720" height="260"></canvas>
+              <p>这些分段是教学预算，不是实测值。真实耗时要用 GPIO、GPT 计数或 DWT cycle counter 在板子上测。</p>
+            </article>
+            <article class="chart-card" style="--card-color: var(--accent-2);">
+              <h3>变量流向图</h3>
+              <canvas id="signalFlowChart" width="720" height="260"></canvas>
+              <p>重点看电流链路和角度链路在哪里汇合：最终在 Park/反 Park 和 SVPWM 处闭合。</p>
+            </article>
+          </div>
+
+          <div class="pipeline">
+            <div class="pipeline-track" id="pipelineTrack"></div>
+            <div class="detail-panel">
+              <article class="panel" id="pipelineDetailMain"></article>
+              <aside class="panel" id="pipelineDetailSide"></aside>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section lesson-page" id="profiling" data-page-title="耗时实测">
+        <div class="section-inner section-band">
+          <div class="section-head">
+            <div class="section-kicker">Profiling</div>
+            <h2>怎么判断每段代码真实耗时</h2>
+            <p>
+              快环总周期由 <code>PWM_FREQUENCY = 20000</code> 决定，所以一拍只有 <code>50 us</code>。网页里的分段时间只是预算示意，真正能用于判断风险的是实测值：测 ADC 中断总耗时，再逐段测 <code>m_phase_current_calculate()</code>、<code>m_observer_execute()</code>、<code>m_foc_algorithm_execute()</code> 和 <code>m_svpwm_generate()</code>。
+            </p>
+          </div>
+
+          <div class="focus-grid">
+            <article class="focus-card" style="--card-color:#00a3a3;">
+              <b>GPIO 示波器法</b>
+              <span>最直观。函数前拉高 GPIO，函数后拉低 GPIO，示波器看到的高电平宽度就是耗时。</span>
+            </article>
+            <article class="focus-card" style="--card-color:var(--accent-6);">
+              <b>GPT 计数法</b>
+              <span>适合不用示波器时做数值记录。若计数时钟 120 MHz，则 <code>time_us = delta_count / 120</code>。</span>
+            </article>
+            <article class="focus-card" style="--card-color:var(--accent-4);">
+              <b>DWT 周期计数法</b>
+              <span>适合 Cortex-M 内核精细测量。若 CPU 120 MHz，则 <code>time_us = cycles / 120</code>。</span>
+            </article>
+          </div>
+
+          <div class="chart-grid two">
+            <article class="chart-card" style="--card-color:#00a3a3;">
+              <h3>GPIO 实测波形示意</h3>
+              <canvas id="profilingPulseCanvas" width="720" height="300"></canvas>
+              <p>一个测量引脚只包住一个函数；多个函数建议换不同 GPIO，或者分多次烧录测量，避免测量代码本身干扰过大。</p>
+            </article>
+            <article class="chart-card" style="--card-color:var(--accent-5);">
+              <h3>实测记录表</h3>
+              <canvas id="profilingBudgetCanvas" width="720" height="300"></canvas>
+              <p>最终要看“最坏情况总耗时”。如果总耗时接近 50 us，需要降低计算量、减少快环内调试输出，或把非必要任务移到慢环。</p>
+            </article>
+          </div>
+
+          <div class="code-grid">
+            <div class="panel">
+              <h3>推荐插桩位置</h3>
+              <div class="code-list">
+                <div class="code-line">
+                  <b>整拍耗时</b>
+                  <code>src/drv/drv_adc_cb.c: adc0_1_irq_callback()</code>
+                </div>
+                <div class="code-line">
+                  <b>坐标变换</b>
+                  <code>m_phase_current_calculate()
+m_clark_transform()
+m_park_transform()</code>
+                </div>
+                <div class="code-line">
+                  <b>观测器与角度</b>
+                  <code>m_observer_execute()
+m_sensorless_rotor_angle_calculate()</code>
+                </div>
+                <div class="code-line">
+                  <b>FOC 与 SVPWM</b>
+                  <code>m_foc_algorithm_execute()
+m_svpwm_generate()</code>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>GPIO 插桩模板</h3>
+              <div class="formula">PROFILE_GPIO_HIGH();
+m_observer_execute();
+PROFILE_GPIO_LOW();
+
+// GPT 120 MHz 时：
+// time_us = delta_count / 120</div>
+              <p class="canvas-caption">
+                注意不要在快环里加串口打印。串口会严重改变中断耗时；需要输出数值时，把结果存到 RAM 缓冲区，再在慢环或停机后读取。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section lesson-page" id="transform-lab" data-page-title="坐标变换">
+        <div class="section-inner section-band">
+          <div class="section-head">
+            <div class="section-kicker">坐标变换</div>
+            <h2>从三相电流到 d/q 电流</h2>
+            <p>
+              这个实验区把 <code>abc -> alpha/beta -> d/q</code> 过程做成了可视化。你只需要调整电流矢量角度和转子角度，就能看到为什么 <code>Id</code> 表示磁链分量、<code>Iq</code> 表示转矩分量。
+            </p>
+          </div>
+
+          <div class="focus-grid">
+            <article class="focus-card" style="--card-color: var(--accent-2);">
+              <b>第一层：ia / ib / ic 是真实绕组电流</b>
+              <span>它们来自 ADC 采样和零偏修正，是 A/B/C 三相线圈里的物理电流。三相无中线电机满足 <code>ia + ib + ic = 0</code>，所以三个量里实际只有两个自由度。</span>
+            </article>
+            <article class="focus-card" style="--card-color: var(--accent);">
+              <b>第二层：iα / iβ 是静止平面的合成矢量</b>
+              <span>Clarke 不是产生新电流，而是把三相电流“合成为一个箭头”。这个箭头固定在定子坐标系里，α 轴通常和 A 相轴对齐。</span>
+            </article>
+            <article class="focus-card" style="--card-color: var(--accent-3);">
+              <b>第三层：Id / Iq 是转子视角下的投影</b>
+              <span>Park 把观察角度换到转子上。<code>Id</code> 是沿转子磁链方向的电流，<code>Iq</code> 是垂直磁链方向的电流，主要决定转矩。</span>
+            </article>
+          </div>
+
+          <div class="chart-grid two">
+            <article class="chart-card" style="--card-color: var(--accent-2);">
+              <h3>Clarke：三相合成一个静止矢量</h3>
+              <canvas id="clarkeConceptCanvas" width="720" height="320"></canvas>
+              <p>A/B/C 三相轴互差 120°。在平衡三相里，第三相可以由另外两相推出，因此可以等价成 αβ 平面上的一个电流箭头。</p>
+            </article>
+            <article class="chart-card" style="--card-color: var(--accent-3);">
+              <h3>Park：把静止矢量投影到转子坐标</h3>
+              <canvas id="parkConceptCanvas" width="720" height="320"></canvas>
+              <p>同一个 <code>iα/iβ</code>，转子角度不同，投到 d/q 轴上的结果就不同。FOC 控制的是这个投影结果，而不是直接控制三相电流波形。</p>
+            </article>
+          </div>
+
+          <div class="code-grid">
+            <div class="panel">
+              <h3>各个量之间的关系</h3>
+              <div class="code-list">
+                <div class="code-line">
+                  <b>三相物理量</b>
+                  <code>ia, ib, ic: 三相绕组电流
+约束: ia + ib + ic = 0</code>
+                </div>
+                <div class="code-line">
+                  <b>Clarke 输出</b>
+                  <code>iα = ia
+iβ = (ia + 2 * ib) / sqrt(3)</code>
+                </div>
+                <div class="code-line">
+                  <b>Park 输出</b>
+                  <code>Id =  iα * cosθ + iβ * sinθ
+Iq = -iα * sinθ + iβ * cosθ</code>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>为什么 FOC 一定要这样变换</h3>
+              <p>三相电流是交流量，直接用 PID 控制会遇到一个问题：目标值和实际值都在随转子位置变化。Park 变换后，如果角度正确，稳定转矩对应的 <code>Id/Iq</code> 会接近直流量，这样电流环就能像控制普通直流量一样工作。</p>
+              <div class="formula">目标：
+Id_target = 0
+Iq_target = 转矩电流
+
+含义：
+Id 越接近 0，电流越少浪费在励磁方向
+Iq 越稳定，输出转矩越稳定</div>
+              <p class="canvas-caption">所以无感 FOC 的角度估算很关键：角度错了，Park 投影就错，<code>Id</code> 和 <code>Iq</code> 会互相串扰，表现为电流大、转矩小、噪声大或启动失败。</p>
+            </div>
+          </div>
+
+          <div class="lab-grid">
+            <div class="panel">
+              <div class="controls">
+                <div class="control">
+                  <label for="magRange">电流矢量幅值 <span id="magValue"></span></label>
+                  <input id="magRange" type="range" min="0.1" max="1.2" step="0.01" value="0.85">
+                </div>
+                <div class="control">
+                  <label for="statorAngleRange">电流矢量角度 <span id="statorAngleValue"></span></label>
+                  <input id="statorAngleRange" type="range" min="0" max="360" step="1" value="122">
+                </div>
+                <div class="control">
+                  <label for="rotorAngleRange">转子电角度 <span id="rotorAngleValue"></span></label>
+                  <input id="rotorAngleRange" type="range" min="0" max="360" step="1" value="32">
+                </div>
+              </div>
+
+              <div class="transform-inline-charts">
+                <section class="transform-inline-chart">
+                  <h3>三相电流平衡</h3>
+                  <canvas id="phaseBarsCanvas" width="680" height="220"></canvas>
+                  <p>柱状图强制显示 <code>Ia + Ib + Ic = 0</code>，拖动上方滑块可以直接观察三相电流如何变化。</p>
+                </section>
+                <section class="transform-inline-chart">
+                  <h3>d/q 投影结果</h3>
+                  <canvas id="dqBarsCanvas" width="680" height="220"></canvas>
+                  <p><code>Id</code> 越接近 0，电流越集中在转矩轴；<code>Iq</code> 的正负决定转矩方向。</p>
+                </section>
+              </div>
+
+              <div class="value-grid" id="transformValues"></div>
+              <p class="canvas-caption" id="transformCaption"></p>
+            </div>
+
+            <div class="panel">
+              <canvas id="transformCanvas" width="680" height="460"></canvas>
+              <div class="code-list">
+                <div class="code-line">
+                  <b>函数顺序</b>
+                  <code>m_phase_current_calculate() -> m_clark_transform() -> m_park_transform(rotor_engle)</code>
+                </div>
+                <div class="code-line">
+                  <b>代码位置</b>
+                  <code>src/motor/m_coordinate.c:55 / 109 / 159</code>
+                </div>
+                <div class="code-line">
+                  <b>当前项目约定</b>
+                  <code>Id target = 0; Iq target 由启动 Iq 或速度环输出决定</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section lesson-page" id="observer" data-page-title="滑模观测器">
+        <div class="section-inner section-band">
+          <div class="section-head">
+            <div class="section-kicker">SMO</div>
+            <h2>滑模观测器与参数交互</h2>
+            <p>
+              当前工程实现的是带边界层的离散滑模观测器。左侧参数会驱动右侧的饱和特性曲线，并给出对抖振、收敛和角度噪声的定性判断。判断逻辑基于这份工程的参数范围，不是抽象教材默认值。
+            </p>
+          </div>
+
+          <div class="focus-grid">
+            <article class="focus-card" style="--card-color: var(--accent);">
+              <b>观测器要解决什么</b>
+              <span>无感 FOC 没有编码器，所以程序不知道真实转子角度。观测器用已知的 <code>Uα/Uβ</code>、实测的 <code>Iα/Iβ</code> 和电机 <code>R/L</code> 模型，反推出反电势 <code>Eα/Eβ</code>，再由反电势得到 <code>θe</code>。</span>
+            </article>
+            <article class="focus-card" style="--card-color: var(--accent-4);">
+              <b>滑模观测器的核心动作</b>
+              <span>先用模型预测电流 <code>i_hat</code>，再看预测电流和真实电流的误差 <code>s=i_hat-i</code>。误差大就强力修正，误差小就线性修正，修正量 <code>z</code> 经过低通后近似反电势。</span>
+            </article>
+            <article class="focus-card" style="--card-color: var(--accent-3);">
+              <b>为什么适合这个工程</b>
+              <span>SMO 计算量小、适合 Q15 定点、对参数误差比纯模型积分更抗干扰。代价是低速反电势弱、<code>K/Smax</code> 不合适会抖振，所以工程里用了边界层和两级低通。</span>
+            </article>
+          </div>
+
+          <div class="chart-grid two">
+            <article class="chart-card" style="--card-color: var(--accent-4);">
+              <h3>从电机模型到离散观测器</h3>
+              <canvas id="observerModelCanvas" width="760" height="360"></canvas>
+              <p>连续模型中的未知量是反电势 <code>E</code>。SMO 通过让估计电流贴近真实电流，把未知反电势转换成可观测的滑模修正量 <code>z</code>。</p>
+            </article>
+            <article class="chart-card" style="--card-color: var(--accent-5);">
+              <h3>SMO 变量来源与去向</h3>
+              <canvas id="observerVariableCanvas" width="760" height="360"></canvas>
+              <p>看懂这张图就能知道每个变量从哪里来、在哪个函数里计算、最后送到哪里使用。</p>
+            </article>
+          </div>
+
+          <div class="observer-choice-stack">
+            <div class="panel">
+              <h3>常见无感观测器对比</h3>
+              <div class="code-list observer-compare-grid">
+                <div class="code-line">
+                  <b>反电势过零 / 反电势直接法</b>
+                  <code>优点: 简单，适合方波/BLDC
+缺点: 低速弱，FOC 正弦控制下角度连续性不够</code>
+                </div>
+                <div class="code-line">
+                  <b>Luenberger / 全阶或降阶观测器</b>
+                  <code>优点: 模型清晰，输出平滑
+缺点: 更依赖 R/L/Ke 参数，增益设计复杂</code>
+                </div>
+                <div class="code-line">
+                  <b>MRAS 模型参考自适应</b>
+                  <code>优点: 可自适应估计速度/参数
+缺点: 推导和稳定性设计更重，调参链路长</code>
+                </div>
+                <div class="code-line">
+                  <b>EKF 扩展卡尔曼滤波</b>
+                  <code>优点: 抗噪声强，可融合多状态
+缺点: 计算量大，矩阵和噪声协方差调试成本高</code>
+                </div>
+                <div class="code-line">
+                  <b>高频注入 HFI</b>
+                  <code>优点: 零速/低速也能估角
+缺点: 需要电机凸极性，噪声和实现复杂度更高</code>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <h3>本工程为什么选 SMO</h3>
+              <div class="observer-reason-body">
+                <div>
+                  <p>这份工程的目标是 20 kHz 快环内完成无感 FOC，平台适合定点运算。SMO 不需要矩阵运算，只依赖加减乘、饱和函数和低通滤波，计算量可控；同时它直接利用电流误差闭环修正，比单纯开环积分模型更能抗参数误差和采样噪声。</p>
+                  <p class="canvas-caption">注意：低速时反电势本身很小，任何反电势类观测器都会困难。工程通过预定位、开环强拖、切闭环判断解决零速启动问题，而不是一上电就靠 SMO 闭环。</p>
+                </div>
+                <div class="formula">电机模型:
+dI/dt = -R/L * I + 1/L * (U - E)
+
+离散形式:
+i_hat[n] = F*i_hat[n-1]
+         + G*u[n-1]
+         - G*z[n-1]
+         - G*e_hat[n-1]</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-grid full">
+            <article class="chart-card" style="--card-color: var(--accent-4);">
+              <h3>变量逐项说明</h3>
+              <div class="bench-table">
+                <div class="bench-row">
+                  <b><code>Iα/Iβ</code></b>
+                  <span>来源: Clarke 变换后的真实电流，来自 <code>m_foc_unit.coordinate.q15_i_alpha/beta</code></span>
+                  <span>用途: 作为观测器校正参考，和 <code>i_hat</code> 比较得到误差 <code>s</code></span>
+                </div>
+                <div class="bench-row">
+                  <b><code>Uα/Uβ</code></b>
+                  <span>来源: 上一拍 SVPWM/电压矢量分解得到的 <code>q15_u_last_alpha/beta</code></span>
+                  <span>用途: 作为电机模型输入，参与下一拍估计电流计算</span>
+                </div>
+                <div class="bench-row">
+                  <b><code>F</code> / <code>G</code></b>
+                  <span>来源: <code>F=1-Ts*R/L</code>，<code>G=Ts/L</code>，在 <code>m_parameter.h</code> 转成 Q15</span>
+                  <span>用途: 把连续电机方程离散化，决定估计电流的模型动态</span>
+                </div>
+                <div class="bench-row">
+                  <b><code>i_hat</code></b>
+                  <span>来源: <code>m_observer_estimate_current()</code> 用 F/G/U/Z/E 递推得到</span>
+                  <span>用途: 和真实电流做差，产生滑模面 <code>s=i_hat-i</code></span>
+                </div>
+                <div class="bench-row">
+                  <b><code>Smax</code></b>
+                  <span>来源: <code>OBSERVER_S_MAX_VALUE=170</code>，边界层宽度</span>
+                  <span>用途: 决定误差多大进入饱和区；越小越硬，越大越平滑</span>
+                </div>
+                <div class="bench-row">
+                  <b><code>K</code></b>
+                  <span>来源: <code>OBSERVER_K_SLIDE=30000</code>，滑模增益</span>
+                  <span>用途: 决定 <code>z</code> 最大修正能力；过小跟不上，过大易抖振</span>
+                </div>
+                <div class="bench-row">
+                  <b><code>zα/zβ</code></b>
+                  <span>来源: <code>z=K*sat(s/Smax)</code>，由 <code>m_observer_z_calculate()</code> 计算</span>
+                  <span>用途: 一边反馈修正估计电流，一边经过低通提取反电势</span>
+                </div>
+                <div class="bench-row">
+                  <b><code>Kafc</code></b>
+                  <span>来源: 根据估计速度/角度增量自适应计算，写入 <code>m_obs_unit.q15_kafc</code></span>
+                  <span>用途: 作为两级低通系数，速度越高通常允许更高带宽</span>
+                </div>
+                <div class="bench-row">
+                  <b><code>Eα/Eβ</code></b>
+                  <span>来源: <code>zα/zβ</code> 经过两级 <code>math_q15_digital_lpf()</code></span>
+                  <span>用途: 作为反电势矢量，用于 <code>atan2(Eβ,Eα)</code> 求角度</span>
+                </div>
+                <div class="bench-row">
+                  <b><code>θe</code></b>
+                  <span>来源: <code>m_sensorless_theta_e_calculate()</code> 中 <code>atan2(Eβ,Eα)</code> 后再做 90°补偿</span>
+                  <span>用途: 确定 d/q 坐标轴位置，送给 Park/FOC/SVPWM 相关角度链路</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="observer-grid">
+            <div class="panel">
+              <div class="formula">z = K * sat(s / Smax)
+
+if s &gt; Smax:   z = +K
+if s &lt; -Smax:  z = -K
+else:          z = K * s / Smax</div>
+
+              <div class="controls" style="margin-top: 18px;">
+                <div class="control">
+                  <label for="kRange">K 滑模增益 <span id="kValue"></span></label>
+                  <input id="kRange" type="range" min="5000" max="32767" step="100" value="30000">
+                </div>
+                <div class="control">
+                  <label for="smaxRange">Smax 边界层宽度 <span id="smaxValue"></span></label>
+                  <input id="smaxRange" type="range" min="40" max="420" step="1" value="170">
+                </div>
+                <div class="control">
+                  <label for="errorRange">当前电流误差 s <span id="errorValue"></span></label>
+                  <input id="errorRange" type="range" min="-1000" max="1000" step="1" value="120">
+                </div>
+                <div class="control">
+                  <label for="speedRange">机械转速参考 <span id="speedValue"></span></label>
+                  <input id="speedRange" type="range" min="300" max="2600" step="10" value="1000">
+                </div>
+              </div>
+
+              <div class="observer-readout" id="observerReadout"></div>
+            </div>
+
+            <div class="panel">
+              <canvas id="observerCanvas" width="760" height="440"></canvas>
+              <div class="code-list">
+                <div class="code-line">
+                  <b>离散电流估算</b>
+                  <code>i_hat[n] = F*i_hat[n-1] + G*u[n-1] - G*z[n-1] - G*e_hat[n-1]</code>
+                </div>
+                <div class="code-line">
+                  <b>代码位置</b>
+                  <code>src/motor/m_observer.c:80, 102, 144</code>
+                </div>
+                <div class="code-line">
+                  <b>角度出口</b>
+                  <code>theta_e = atan2(e_beta_final, e_alpha_final)</code>，位于 <code>src/motor/m_rotor_angle.c:127</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-grid full">
+            <article class="chart-card" style="--card-color: var(--accent-4);">
+              <h3>滑模观测器信号链</h3>
+              <canvas id="observerFlowCanvas" width="980" height="260"></canvas>
+              <p>观测器不是直接“算角度”，而是先让估计电流贴近真实电流，再把滑模输出滤成反电势，最后由反电势矢量求电角度。</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section lesson-page" id="startup" data-page-title="启动与切环">
+        <div class="section-inner section-band">
+          <div class="section-head">
+            <div class="section-kicker">启动与切环</div>
+            <h2>状态机与闭环切换条件</h2>
+            <p>
+              当前项目没有从零速直接无感闭环，而是先做预充电、两步预定位、开环强拖，再通过观测角和强拖角的相位关系判断是否切环。左侧点步骤，右侧看目的、参数和调试重点。
+            </p>
+          </div>
+
+          <div class="startup-grid">
+            <div class="panel">
+              <div class="step-list" id="startupSteps"></div>
+            </div>
+            <div class="panel">
+              <article id="startupDetail"></article>
+              <div class="timeline" id="startupTimeline"></div>
+              <div class="startup-chart-inline">
+                <h3>启动阶段速度轨迹</h3>
+                <canvas id="startupSpeedCanvas" width="980" height="340"></canvas>
+                <p>低速无感反电势弱，所以程序先用固定角度和开环强拖制造可观测反电势，再判断是否进入闭环。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section lesson-page" id="code-map" data-page-title="工程文件">
+        <div class="section-inner section-band">
+          <div class="section-head">
+            <div class="section-kicker">文件地图</div>
+            <h2>用工程结构学无感 FOC</h2>
+            <p>
+              这部分按阅读顺序组织文件，不按目录顺序罗列。左侧选文件，右侧看它在整条链路中的职责、必须先读懂的函数，以及和其他模块的前后依赖。
+            </p>
+          </div>
+
+          <div class="code-grid">
+            <div class="panel">
+              <div class="file-tabs" id="fileTabs"></div>
+            </div>
+            <div class="panel" id="fileDetail"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section lesson-page" id="tuning" data-page-title="调参与台架">
+        <div class="section-inner section-band">
+          <div class="section-head">
+            <div class="section-kicker">调参与台架</div>
+            <h2>怎么搭环境，怎么按顺序调</h2>
+            <p>
+              先调通观测器，再谈速度环。这里把台架、观察量、推荐顺序和故障症状分开列，避免把电流零偏、模型误差、滑模参数和速度环问题混在一起。
+            </p>
+          </div>
+
+          <div class="chart-grid full">
+            <article class="chart-card" style="--card-color: var(--accent-6);">
+              <h3>SMO 参数调试热力图</h3>
+              <canvas id="tuningMatrixCanvas" width="980" height="330"></canvas>
+              <p>横轴是 <code>Smax</code>，纵轴是 <code>K</code>。颜色越偏红，越容易抖振；越偏灰，越容易收敛慢；中间区域更适合作为台架起点。</p>
+            </article>
+          </div>
+
+          <div class="bench-grid">
+            <div class="panel">
+              <div class="bench-tabs" id="benchTabs"></div>
+            </div>
+            <div class="panel" id="benchDetail"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section lesson-page" id="quiz" data-page-title="自测">
+        <div class="section-inner section-band">
+          <div class="section-head">
+            <div class="section-kicker">自测</div>
+            <h2>用约二十题检查你是否能把工程跑通</h2>
+            <p>
+              题目都围绕当前项目的真实实现，不考抽象定义。答错时会指出应该回去看哪一段流程或哪一个文件。
+            </p>
+          </div>
+
+          <div class="quiz-grid" id="quizGrid"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <p>
+          关键入口：<code>src/hal_entry.c</code> 初始化与调试口，<code>src/drv/drv_adc_cb.c</code> 20 kHz 快环中断，
+          <code>src/motor/m_coordinate.c</code> 坐标变换，<code>src/motor/m_observer.c</code> 观测器，
+          <code>src/motor/m_rotor_angle.c</code> 角度与速度估算，<code>src/motor/m_foc.c</code> 启动状态机与闭环切换。
+        </p>
+      </div>
+    </footer>
+    </div>
+  </div>
+
+  <script>
+    const pipelineSteps = [
+      {
+        key: "sample",
+        short: "1 / ADC采样",
+        title: "ADC 采样与中断入口",
+        summary: "快环由 ADC0 扫描完成中断触发，不在主循环里跑控制。",
+        detail: "程序每 50 us 在 adc0_1_irq_callback() 中依次读取原始相电流、电压和反电势采样，然后串起坐标变换、电流环、观测器、角度估算和 FOC 状态机。",
+        file: "src/drv/drv_adc_cb.c:214",
+        inputs: "GPT 触发的 ADC0 组采样结果",
+        outputs: "相电流、母线电压、反电势通道、20 kHz 执行时基",
+        why: "确定整个离散系统的采样周期 Ts = 50 us，这是 F/G 系数、速度估算窗口和观测器滤波全都依赖的基础。"
+      },
+      {
+        key: "phase",
+        short: "2 / 相电流",
+        title: "相电流重构",
+        summary: "减零偏并按扇区用 KCL 重构采样窗口最差的一相。",
+        detail: "m_phase_current_calculate() 先做 offset - instant，再根据 m_svpwm_unit.sector 选择一相由 ia + ib + ic = 0 重构，输出 Q15 格式的 ia/ib/ic。",
+        file: "src/motor/m_coordinate.c:55",
+        inputs: "三相 ADC 原始采样值 + 上电零偏 + SVPWM 扇区",
+        outputs: "q15_ia / q15_ib / q15_ic",
+        why: "当前硬件不是三相都在完美采样窗口内，直接用三路原始值会把 PWM 边沿噪声送进观测器和电流环。"
+      },
+      {
+        key: "transform",
+        short: "3 / 坐标变换",
+        title: "Clarke 与 Park 变换",
+        summary: "把 abc 电流压缩到 alpha/beta，再旋转到 d/q。",
+        detail: "m_clark_transform() 给出 Ialpha / Ibeta，m_park_transform(rotor_engle) 结合当前转子角得到 Id / Iq。这里的转子角在开环和闭环阶段来源不同。",
+        file: "src/motor/m_coordinate.c:109 / 159",
+        inputs: "ia/ib/ic + rotor_engle",
+        outputs: "i_alpha / i_beta / id / iq",
+        why: "电流环要在 d/q 坐标系中工作，才能把磁链分量和转矩分量拆开控制。"
+      },
+      {
+        key: "current-pi",
+        short: "4 / 电流环",
+        title: "Id/Iq 电流环",
+        summary: "Id 目标固定为 0，Iq 由启动值或速度环给定。",
+        detail: "m_current_pid_execute() 调用两个串联 PI：Id 环输出 Ud，Iq 环输出 Uq。Id 目标固定为 0，Iq 目标在启动阶段来自 START_IQ，在稳定闭环后来自速度环。",
+        file: "src/motor/m_foc.c:141",
+        inputs: "id/iq + id* / iq*",
+        outputs: "ud / uq",
+        why: "让电机在磁链方向上尽量不浪费电压，把主要能力都放在 q 轴转矩分量。"
+      },
+      {
+        key: "observer",
+        short: "5 / SMO",
+        title: "滑模观测器",
+        summary: "用离散模型估计电流，再由误差构造 z，最后滤波得到反电动势。",
+        detail: "m_observer_execute() 先计算 i_hat[n] = F*i_hat[n-1] + G*u[n-1] - G*z[n-1] - G*e_hat[n-1]，再根据 s = i_hat - i 构造带边界层的 z。z 经过两级低通得到 e_alpha_final / e_beta_final。",
+        file: "src/motor/m_observer.c:144",
+        inputs: "i_alpha / i_beta + u_alpha_last / u_beta_last",
+        outputs: "i_hat / z / e_alpha_final / e_beta_final",
+        why: "静止与低速时没有直接角度传感器，只能先估计反电动势，再从反电动势中读角度。"
+      },
+      {
+        key: "angle",
+        short: "6 / 角度速度",
+        title: "角度与速度估算",
+        summary: "用 atan2(Ebeta, Ealpha) 求角，再通过角度差分求速度。",
+        detail: "m_sensorless_rotor_angle_calculate() 先做 theta_e = atan2(e_beta_final, e_alpha_final)，再累计 delta theta 求 eRPM，最后除以极对数得到机械转速。低速段还会动态调整滤波系数。",
+        file: "src/motor/m_rotor_angle.c:127 / 166 / 266",
+        inputs: "e_alpha_final / e_beta_final",
+        outputs: "q15_theta_e / spd_val / q15_kafc",
+        why: "当前工程真正闭环依赖的是这个角度估算出口，而不是 Hall。Hall 只保留了采样链路，没有进入主控制。"
+      },
+      {
+        key: "vector",
+        short: "7 / 电压矢量",
+        title: "Us 模长、超前角与 SVPWM",
+        summary: "当前工程没有显式走 inverse Park，而是先求 Us 和 advance angle，再送入 SVPWM。",
+        detail: "m_us_theta_c_calculate() 会根据 Ud/Uq 做限幅、求模和超前角。之后 m_foc_algorithm_execute() 根据方向把 q_engle 拼成 rotor_engle ± 90° ± advance_angle，再调用 m_svpwm_generate()。",
+        file: "src/motor/m_coordinate.c:221 + src/motor/m_foc.c:527",
+        inputs: "ud / uq + rotor_engle + direction",
+        outputs: "q16_us / advance_angle / pwm duty / u_last_alpha_beta",
+        why: "SVPWM 一方面驱动电机，另一方面把上一拍的 Ualpha/Ubeta 留给观测器作为离散输入。"
+      },
+      {
+        key: "state",
+        short: "8 / 状态机",
+        title: "启动、强拖与切环",
+        summary: "从零速起步前先预充电、双步预定位，再开环强拖，满足角度关系后切闭环。",
+        detail: "m_foc_algorithm_execute() 管理整个状态机。强拖阶段先积分得到 rotor_engle，再用观测角与强拖角的夹角做切换判据，进入闭环后速度 PI 才逐步接管 Iq 目标。",
+        file: "src/motor/m_foc.c:426",
+        inputs: "启动命令 + tick + observer angle + drag angle",
+        outputs: "状态转移、q_engle、iq target、stabilize_sign",
+        why: "无感观测器在零速和极低速信息不足，必须先把反电动势建立起来，再闭环。"
+      }
+    ];
+
+    const startupSteps = [
+      {
+        key: "boost",
+        title: "预充电",
+        time: "10 ms",
+        code: "BOOTSTRAP_BOOST_CHARGING_TIME / m_motor_boost_charge()",
+        purpose: "给高低桥自举电容充电，避免一进控制就因为高侧驱动掉压导致占空比异常。",
+        focus: "示波器看三相占空比均在 50%，母线电流不应异常抬高。"
+      },
+      {
+        key: "step1",
+        title: "预定位 Step1",
+        time: "500 ms",
+        code: "ROTOR_POSITION_STEP_1_THETA_ANGLE = 90°",
+        purpose: "先把转子磁链拉到一个已知扇区边界附近，给后续第二步定位留空间。",
+        focus: "看转子是否明显吸附到位，电流不能长期打满。"
+      },
+      {
+        key: "step2",
+        title: "预定位 Step2",
+        time: "500 ms",
+        code: "ROTOR_POSITION_STEP_2_THETA_ANGLE = 0°",
+        purpose: "再次定位，让开环强拖的起始角明确，减小初始错位。",
+        focus: "这一步结束后 rotor_engle 被重置为 EANGLE0。"
+      },
+      {
+        key: "drag",
+        title: "开环强拖",
+        time: "500 us 一个积分步",
+        code: "m_drag_acc_curve_design()",
+        purpose: "通过积分加速度得到强拖角速度和强拖角度，先把反电动势建立起来。",
+        focus: "检查 Iq 启动值是否足够、电机能否顺利起转。"
+      },
+      {
+        key: "switch",
+        title: "切环判据",
+        time: "每 5 ms 修正一次 Iq",
+        code: "m_close_loop_switch_judgement()",
+        purpose: "判断观测角与强拖角的相位差是否稳定落在 60° 到 120° 之间，并连续满足阈值次数。",
+        focus: "这是切环是否平滑的核心，过早切环通常会失步。"
+      },
+      {
+        key: "correct",
+        title: "角度校正",
+        time: "闭环初期持续执行",
+        code: "m_angle_correction()",
+        purpose: "把强拖角逐步拉到观测角附近，直到 sub_angle 收敛到 90°。",
+        focus: "此时速度环还没完全放开，主要先保角度一致。"
+      },
+      {
+        key: "speed",
+        title: "速度环接管",
+        time: "10 ms 更新一次",
+        code: "SPD_PID_EXECUTE_CYCLE / m_spd_pid_execute()",
+        purpose: "当 stabilize_sign 置位后，速度环开始给 Iq 目标，完成真正的速度闭环。",
+        focus: "观察 Iq target、Iq actual、sp_val 是否平稳。"
+      }
+    ];
+
+    const fileMap = [
+      {
+        key: "hal",
+        label: "hal_entry.c",
+        role: "系统初始化与调试出口",
+        path: "src/hal_entry.c",
+        learn: "先看它，能知道有哪些驱动和调试口已经被接好了。当前 observer 调试口、VOFA+ 串口输出和 DAC 示波口都在这里留了接口。",
+        functions: [
+          "hal_entry(): 初始化 ADC / PWM / DAC / UART / Hall / 保护",
+          "pid_vofa_debug(): 当前默认启用，用于观察 Iq 目标与实际值",
+          "observer_vofa_debug(): 已写好，可切到电流估计、角度、反电势波形"
+        ],
+        reading: "如果你准备边看代码边调参，先改这里的调试口，少改算法文件。"
+      },
+      {
+        key: "adc",
+        label: "drv_adc_cb.c",
+        role: "20 kHz 控制快环入口",
+        path: "src/drv/drv_adc_cb.c",
+        learn: "这份工程里最重要的控制执行顺序都在这里。只要把这个回调看顺，整个离散控制链就清楚了。",
+        functions: [
+          "adc0_1_irq_callback(): 快环总入口",
+          "drv_adc0_sample(): 读取原始相电流和电压",
+          "drv_adc0_filter(): 完成零偏累计与母线电压滤波"
+        ],
+        reading: "读代码时把这里当成主流程图，而不是从函数定义顺序开始。"
+      },
+      {
+        key: "coordinate",
+        label: "m_coordinate.c",
+        role: "电流测量链与电压矢量预处理",
+        path: "src/motor/m_coordinate.c",
+        learn: "前半段解决 Ia/Ib/Ic 到 Id/Iq，后半段解决 Ud/Uq 到 Us 和超前角。当前工程没有显式调用 inverse Park 路径。",
+        functions: [
+          "m_phase_current_calculate(): 零偏扣除 + 按扇区重构相电流",
+          "m_clark_transform(): abc -> alpha/beta",
+          "m_park_transform(): alpha/beta -> d/q",
+          "m_us_theta_c_calculate(): 限幅、求 Us 与 advance_angle"
+        ],
+        reading: "理解这文件后，再回头看电流 PI 和 SVPWM 会轻松很多。"
+      },
+      {
+        key: "observer-file",
+        label: "m_observer.c",
+        role: "离散滑模观测器",
+        path: "src/motor/m_observer.c",
+        learn: "这里把连续模型已经离散化成 MCU 可以执行的差分方程，也是当前工程无感部分的核心。",
+        functions: [
+          "m_observer_init(): 装载 F/G、Smax、K",
+          "m_observer_estimate_current(): i_hat[n] 更新",
+          "m_observer_z_calculate(): z = K * sat(s / Smax)",
+          "m_observer_execute(): 整体观测器执行"
+        ],
+        reading: "先确认 F/G 与电机参数一致，再谈 K 和 Smax。"
+      },
+      {
+        key: "angle-file",
+        label: "m_rotor_angle.c",
+        role: "角度与速度出口",
+        path: "src/motor/m_rotor_angle.c",
+        learn: "无感控制真正闭环依赖这里算出来的 theta_e 和 spd_val。观测器如果做对了，最终要在这里体现出来。",
+        functions: [
+          "m_sensorless_theta_e_calculate(): atan2(Ebeta, Ealpha)",
+          "m_sensorless_rpm_calculate(): 由角度增量求 eRPM 和机械转速",
+          "m_sensorless_kafc_calculate(): 根据速度调滤波系数",
+          "m_sensorless_rotor_angle_calculate(): 整体出口"
+        ],
+        reading: "这里最适合和编码器/Hall 对比验证估角质量。"
+      },
+      {
+        key: "foc-file",
+        label: "m_foc.c",
+        role: "启动状态机与双环控制骨架",
+        path: "src/motor/m_foc.c",
+        learn: "如果你只想知道为什么电机从静止到闭环，中间要走那么多状态，这个文件就是完整答案。",
+        functions: [
+          "m_current_pid_execute(): Id/Iq 电流环",
+          "m_spd_pid_execute(): 速度环给 Iq 目标",
+          "m_drag_acc_curve_design(): 强拖角速度积分",
+          "m_close_loop_switch_judgement(): 切环判据",
+          "m_foc_algorithm_execute(): 总状态机"
+        ],
+        reading: "读到这里时，前面的观测器和坐标变换最好已经有基本概念。"
+      },
+      {
+        key: "svm",
+        label: "m_svpwm.c",
+        role: "电压矢量调制与扇区信息",
+        path: "src/motor/m_svpwm.c",
+        learn: "这份工程里的 SVPWM 不只是输出 PWM，占空比扇区还反过来影响相电流重构；Ualpha/Ubeta 也会反馈给观测器。",
+        functions: [
+          "m_us_sector_calculate(): 计算扇区",
+          "m_svpwm_duty_calculate(): 按扇区生成占空比",
+          "m_u_alpha_u_beta_calculate(): 保存上一拍 Ualpha/Ubeta",
+          "m_svpwm_generate(): 总入口"
+        ],
+        reading: "如果你发现电流重构不稳，除了 ADC 采样，还要回头看这里的扇区信息是否正确。"
+      }
+    ];
+
+    const benchTabs = [
+      {
+        key: "bench-setup",
+        label: "台架搭建",
+        title: "最低可用调试环境",
+        intro: "不建议一上来就带额定母线和机械负载。先把环境搭成能安全反复上电、抓波形、快速断电的形式。",
+        checklist: [
+          "可调直流电源，先把母线压在额定值的 30% 到 50%，并开启限流。",
+          "示波器至少看得到母线电流或相电流，以及一路 DAC 或串口上传波形。",
+          "保留过流、过压、过温保护。急停或快速断母线手段必须有。",
+          "优先空载调试。没有把观测器调顺之前，不上机械负载。",
+          "如果有编码器或 Hall，先拿它们做角度基准，不要直接盲调无感角度。"
+        ],
+        rows: [
+          ["必看波形", "Iq target / Iq actual", "判断电流环与起动扭矩是否够用"],
+          ["必看波形", "i_alpha_estimate / i_alpha", "判断观测器是否收敛"],
+          ["必看波形", "e_alpha_final / e_beta_final", "判断反电势幅值与噪声"],
+          ["必看波形", "theta_e 与 rotor_engle", "判断切闭环前后角度关系"]
+        ]
+      },
+      {
+        key: "observer-tune",
+        label: "观测器初调",
+        title: "先固定边界层，再调 K",
+        intro: "不要同时改 K 和 Smax。先让系统稳定，再把收敛速度和噪声往合适区间拉。",
+        checklist: [
+          "先确认电流零偏、采样极性、F/G 系数无误。",
+          "先把 Smax 设得偏大一些，边界层先放宽。",
+          "K 从小往上加，优先看 i_alpha_estimate 是否能跟上 i_alpha。",
+          "出现反电势很尖、角度抖、低速噪声大，先退 K，不要立刻怀疑速度环。",
+          "K 定住后再慢慢缩 Smax，看能否在不明显增噪的前提下提升角度质量。"
+        ],
+        rows: [
+          ["K 太小", "收敛慢，估计电流跟不上", "加速或负载变化时角度容易漂"],
+          ["K 太大", "抖振重，反电势很尖", "速度噪声大，低速更难稳"],
+          ["Smax 太大", "边界层太宽，系统偏钝", "误差残留大，切环时不利"],
+          ["Smax 太小", "对噪声过敏", "电流纹波和 ADC 噪声会直接打进 z"]
+        ]
+      },
+      {
+        key: "switch-tune",
+        label: "切闭环",
+        title: "先让开环强拖稳定，再谈切环",
+        intro: "当前项目切闭环靠的是观测角和强拖角之间的夹角关系。很多切环失败，不是闭环算法错，而是开环强拖还没把反电势建立起来。",
+        checklist: [
+          "先保证预定位电流足够，但不要长时间过大。",
+          "强拖期间观察 rotor_engle 是否连续、单调，没有明显速度塌陷。",
+          "看 sub_angle 是否开始稳定落在 60° 到 120° 区间。",
+          "切环前 Iq 目标会被缓慢拉回，避免速度环一接管就因为积分项过大失稳。",
+          "切环后先看角度校正是否顺利收敛到 90°，再看速度环表现。"
+        ],
+        rows: [
+          ["切环过早", "sub_angle 还没稳定就切", "常见表现是电机猛抖或直接失步"],
+          ["切环过晚", "能跑，但切换点拖沓", "通常启动时间偏长，用户体验差"],
+          ["Iq 不够", "强拖起不来", "反电势幅值始终建立不起来"],
+          ["Iq 过大", "起动很猛但噪声大", "更容易把切环问题掩盖掉"]
+        ]
+      },
+      {
+        key: "speed-loop",
+        label: "速度环",
+        title: "速度环放在最后",
+        intro: "这份工程里速度环只有在 stabilize_sign 置位后才真正接管 Iq 目标，所以速度环的任何现象都建立在前面的角度闭环已经可用的前提上。",
+        checklist: [
+          "确认机械速度估算波形已经平稳，再开速度环。",
+          "先小步升速，不要上来跨大范围调速。",
+          "速度环观察量优先看 set_spd_val、spd_val、Iq target 三者关系。",
+          "如果速度环一开就抖，先检查角度估算噪声，而不是先改速度环 KP/KI。",
+          "速度环只负责外环，不负责修正观测器错误。"
+        ],
+        rows: [
+          ["速度跟不上", "Iq target 顶到上限", "先看电流环和母线压，而不是继续堆速度环增益"],
+          ["速度抖", "spd_val 噪声大", "先回头看 angle_e 和 e_alpha/e_beta"],
+          ["速度超调", "Iq 拉得太猛", "适当减小速度环比例或积分"],
+          ["速度迟钝", "Iq 目标变化太小", "确认速度环没被过强的下限或限幅卡住"]
+        ]
+      }
+    ];
+
+    const quizQuestions = [
+      {
+        title: "为什么这个工程不能从零速直接无感闭环？",
+        options: [
+          "因为 RA6T2 算力不够",
+          "因为零速时反电动势几乎没有，观测器角度信息不足",
+          "因为 SVPWM 只能在中速以上工作"
+        ],
+        answer: 1,
+        explain: "无感观测器在零速时没有足够的反电动势信息，所以工程先走预定位和开环强拖。回看 m_foc.c 的状态机。"
+      },
+      {
+        title: "20 kHz 快环为什么对应 50 us 周期？",
+        options: [
+          "因为 1 / 20000 Hz = 50 us",
+          "因为 ADC 转换固定需要 50 us",
+          "因为电机机械周期固定是 50 us"
+        ],
+        answer: 0,
+        explain: "快环周期由 PWM_FREQUENCY=20000 决定，1/20000 秒就是 50 us。这个周期会影响离散系数、观测器和调试预算。"
+      },
+      {
+        title: "当前工程里真正的 20 kHz 快环入口是哪一个函数？",
+        options: [
+          "hal_entry()",
+          "m_foc_algorithm_execute()",
+          "adc0_1_irq_callback()"
+        ],
+        answer: 2,
+        explain: "控制主链条在 ADC0 扫描完成中断里串起来，不在 while(1) 里。"
+      },
+      {
+        title: "为什么不能在快环里直接串口打印大量调试信息？",
+        options: [
+          "串口会显著改变中断耗时，破坏 50 us 时间预算",
+          "串口只能输出整数，不能输出 Q15 数据",
+          "串口会改变电机极对数"
+        ],
+        answer: 0,
+        explain: "第三章强调快环内不要加串口打印。要测耗时用 GPIO/GPT/DWT，要输出数据则放到缓冲区或慢环处理。"
+      },
+      {
+        title: "死区时间的直接目的是什么？",
+        options: [
+          "让上下桥臂永远同时导通",
+          "避免上下桥臂换相瞬间直通",
+          "提高 ADC 分辨率"
+        ],
+        answer: 1,
+        explain: "死区时间是功率桥保护手段，用来覆盖 MOS/IGBT 开关延迟和驱动延迟，避免同一桥臂上下管瞬间直通。"
+      },
+      {
+        title: "m_phase_current_calculate() 为什么要按扇区重构一相电流？",
+        options: [
+          "为了省掉 Clarke 变换",
+          "因为某些扇区里一相采样窗口最差，用 KCL 更稳",
+          "因为电机没有中性点"
+        ],
+        answer: 1,
+        explain: "它利用 ia + ib + ic = 0，在采样窗口最差的相上不用原始值，直接重构。"
+      },
+      {
+        title: "三相无中线电机里，平衡三相电流满足什么约束？",
+        options: [
+          "ia + ib + ic = 0",
+          "ia = ib = ic",
+          "ia + ib = ic"
+        ],
+        answer: 0,
+        explain: "三相绕组没有中性线电流通道时，三相瞬时电流代数和为 0。相电流重构和 Clarke 变换都依赖这个约束。"
+      },
+      {
+        title: "本页面采用的 Clarke 关系里，iα 和 iβ 大致来自哪里？",
+        options: [
+          "iα = ia，iβ = (ia + 2ib) / sqrt(3)",
+          "iα = id，iβ = iq",
+          "iα = ia + ib + ic，iβ = 0"
+        ],
+        answer: 0,
+        explain: "第四章公式写明 iα 通常与 A 相轴对齐，iβ 由 ia 和 ib 合成，三相量被压缩成静止 αβ 平面矢量。"
+      },
+      {
+        title: "Park 变换中的 θ 在本工程语境下主要代表什么？",
+        options: [
+          "ADC 采样相位",
+          "转子电角度，也就是 d/q 轴相对 α 轴的位置",
+          "PWM 死区角度"
+        ],
+        answer: 1,
+        explain: "θ 决定 d/q 坐标轴摆在哪里。θ 错，Id/Iq 投影就错，电流会串扰。"
+      },
+      {
+        title: "FOC 中希望 Id 接近 0、Iq 稳定，主要意味着什么？",
+        options: [
+          "电流主要集中在转矩轴，少浪费在励磁方向",
+          "三相电流都变成 0",
+          "SVPWM 不再需要扇区判断"
+        ],
+        answer: 0,
+        explain: "第四章强调 Id 是磁链方向分量，Iq 是转矩方向分量。表贴 PMSM 常见控制目标是 Id=0、Iq 产生转矩。"
+      },
+      {
+        title: "反 Park / 矢量合成之后，控制量主要送到哪里？",
+        options: [
+          "送到 SVPWM 生成三相 PWM 占空比",
+          "直接送到串口打印",
+          "只送到速度 PI"
+        ],
+        answer: 0,
+        explain: "控制链是 Ud/Uq 经过反 Park 或矢量合成得到电压矢量，再由 SVPWM 输出功率桥占空比。"
+      },
+      {
+        title: "滑模观测器要从电机模型里反推出的关键未知量是什么？",
+        options: [
+          "反电势 Eα/Eβ",
+          "PWM 频率",
+          "死区计数值"
+        ],
+        answer: 0,
+        explain: "观测器用 Uα/Uβ、Iα/Iβ 和 R/L 模型，让估计电流贴近真实电流，最终提取反电势并求角度。"
+      },
+      {
+        title: "滑模观测器里的 K 和 Smax，哪个更直接决定边界层斜率？",
+        options: [
+          "K / Smax",
+          "K * Smax",
+          "只和 K 有关"
+        ],
+        answer: 0,
+        explain: "边界层内 z = K * s / Smax，所以斜率是 K / Smax。"
+      },
+      {
+        title: "SMO 中 z 输出为什么还要经过低通滤波？",
+        options: [
+          "因为 z 含有滑模抖振和开关噪声，需要滤成更可用的反电势",
+          "因为低通滤波可以把机械角直接变成电角",
+          "因为低通后可以省掉 ADC"
+        ],
+        answer: 0,
+        explain: "第五章变量链路写明 z 一方面回到估计电流方程校正，另一方面经两级 LPF 得到 Eα/Eβ。"
+      },
+      {
+        title: "由反电势求转子电角度时，工程中主要依赖哪个思路？",
+        options: [
+          "atan2(Eβ, Eα) 后再做相位补偿",
+          "只看 Ia 是否大于 Ib",
+          "把 PWM 占空比直接当成角度"
+        ],
+        answer: 0,
+        explain: "角度出口在 m_rotor_angle.c 中由反电势矢量求角度，并做 90° 相关补偿。"
+      },
+      {
+        title: "启动过程中为什么做两次预定位？",
+        options: [
+          "先把未知转子位置拉到已知扇区附近，再定位到强拖起始角",
+          "为了让速度 PI 提前积分",
+          "为了让 ADC 自动校准增益"
+        ],
+        answer: 0,
+        explain: "本工程 Step1=90°、Step2=0°，第二次结束后强拖从 EANGLE0 开始，实际转子位置和软件开环角更一致。"
+      },
+      {
+        title: "开环强拖切闭环时，工程主要看哪个角度关系？",
+        options: [
+          "观测反电势角 θe 和强拖转子角 θr 的相位差是否落在合理区间",
+          "三相电流是否全部为正",
+          "母线电压是否等于额定电压"
+        ],
+        answer: 0,
+        explain: "m_close_loop_switch_judgement() 中判断 sub_angle，理论上反电势角和转子位置角相差约 90°，工程用 60° 到 120° 作为窗口。"
+      },
+      {
+        title: "切闭环判断里为什么不能只看一次 sub_angle 合格就立刻切？",
+        options: [
+          "需要连续满足阈值，避免瞬时噪声导致误切",
+          "因为 sub_angle 只能在停机时计算",
+          "因为速度环每 1 us 才执行一次"
+        ],
+        answer: 0,
+        explain: "工程里有 close_loop_cnt 和 MOTOR_DRAG_CLOSE_LOOP_THRESHOLD_VALUE，要求条件持续满足，降低偶发噪声误判。"
+      },
+      {
+        title: "阅读工程文件时，想理解坐标变换流程应优先看哪个文件？",
+        options: [
+          "src/motor/m_coordinate.c",
+          "src/drv/drv_key.c",
+          "src/motor/m_tick.h"
+        ],
+        answer: 0,
+        explain: "m_coordinate.c 负责相电流计算、Clarke、Park 等坐标变换，是第四章对应的核心文件。"
+      },
+      {
+        title: "如果观测器波形里 i_alpha_estimate 明显跟不上 i_alpha，优先怀疑什么？",
+        options: [
+          "K 偏小、Smax 偏大、F/G 或采样极性等基础量有问题",
+          "HTML 页面颜色太浅",
+          "速度环 Ki 必然过小"
+        ],
+        answer: 0,
+        explain: "调参章节建议先看电流零偏、采样极性、F/G，再调 K 和 Smax。估计电流没跟上时不要先改速度环。"
+      },
+      {
+        title: "K 太大或 Smax 太小时，最容易出现什么现象？",
+        options: [
+          "滑模输出过硬，反电势和角度噪声变大",
+          "PWM 频率自动降低",
+          "三相电流永远相等"
+        ],
+        answer: 0,
+        explain: "K/Smax 过大意味着边界层斜率过硬，容易把采样噪声和电流纹波打进 z，表现为抖振和角度噪声。"
+      },
+      {
+        title: "什么时候才应该开始重点调速度环？",
+        options: [
+          "一上电就可以",
+          "当观测角、切环和电流环都已经稳定后",
+          "只要能转起来就立刻调"
+        ],
+        answer: 1,
+        explain: "速度环建立在前面角度闭环可用的前提上。先调速度环只会掩盖真正问题。"
+      }
+    ];
+
+    const benchState = {};
+
+    function createEl(tag, className, text) {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      if (text !== undefined) el.textContent = text;
+      return el;
+    }
+
+    function rad(deg) {
+      return deg * Math.PI / 180;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function format(value, digits = 3) {
+      return Number(value).toFixed(digits);
+    }
+
+    const pageOrder = ["overview", "pipeline", "profiling", "transform-lab", "observer", "startup", "code-map", "tuning", "quiz"];
+    const pageCount = document.getElementById("pageCount");
+    const pageTitle = document.getElementById("pageTitle");
+    const lessonWorkspace = document.getElementById("lessonWorkspace");
+
+    function activatePage(pageId, updateHash = true) {
+      const targetId = pageOrder.includes(pageId) ? pageId : "overview";
+      document.querySelectorAll(".lesson-page").forEach((page) => {
+        page.classList.toggle("active", page.id === targetId);
+      });
+      document.querySelectorAll(".lesson-link").forEach((link) => {
+        link.classList.toggle("active", link.dataset.pageLink === targetId);
+      });
+      document.querySelectorAll(".jump").forEach((link) => {
+        link.classList.toggle("active", link.getAttribute("href") === `#${targetId}`);
+      });
+
+      const activePage = document.getElementById(targetId);
+      const pageIndex = pageOrder.indexOf(targetId) + 1;
+      pageCount.textContent = `${String(pageIndex).padStart(2, "0")} / ${String(pageOrder.length).padStart(2, "0")}`;
+      pageTitle.textContent = activePage.dataset.pageTitle || "总览";
+      lessonWorkspace.scrollTop = 0;
+
+      if (updateHash && location.hash !== `#${targetId}`) {
+        history.pushState(null, "", `#${targetId}`);
+      }
+
+      requestAnimationFrame(() => {
+        renderStaticCharts();
+        if (targetId === "profiling") renderProfilingCharts();
+        if (targetId === "transform-lab") renderTransformLab();
+        if (targetId === "observer") renderObserverLab();
+        if (targetId === "startup") renderStartupCharts();
+      });
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const targetId = link.getAttribute("href").slice(1);
+        if (!pageOrder.includes(targetId)) return;
+        event.preventDefault();
+        activatePage(targetId);
+      });
+    });
+
+    window.addEventListener("hashchange", () => {
+      activatePage(location.hash.slice(1), false);
+    });
+
+    function drawRoundedRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+    }
+
+    function drawCanvasArrow(ctx, x1, y1, x2, y2, color) {
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - 10 * Math.cos(angle - Math.PI / 6), y2 - 10 * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x2 - 10 * Math.cos(angle + Math.PI / 6), y2 - 10 * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawAngleMarker(ctx, cx, cy, radius, startDeg, endDeg, color, label) {
+      let delta = endDeg - startDeg;
+      if (delta < 0) delta += 360;
+      const steps = Math.max(10, Math.ceil(delta / 6));
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const deg = startDeg + delta * i / steps;
+        const x = cx + radius * Math.cos(rad(deg));
+        const y = cy - radius * Math.sin(rad(deg));
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      const end = startDeg + delta;
+      const endX = cx + radius * Math.cos(rad(end));
+      const endY = cy - radius * Math.sin(rad(end));
+      const prevX = cx + radius * Math.cos(rad(end - 5));
+      const prevY = cy - radius * Math.sin(rad(end - 5));
+      const arrowAngle = Math.atan2(endY - prevY, endX - prevX);
+      ctx.beginPath();
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX - 8 * Math.cos(arrowAngle - Math.PI / 6), endY - 8 * Math.sin(arrowAngle - Math.PI / 6));
+      ctx.lineTo(endX - 8 * Math.cos(arrowAngle + Math.PI / 6), endY - 8 * Math.sin(arrowAngle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+
+      const mid = startDeg + delta / 2;
+      const labelX = cx + (radius + 18) * Math.cos(rad(mid));
+      const labelY = cy - (radius + 18) * Math.sin(rad(mid));
+      ctx.font = "700 13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText(label, labelX - 10, labelY + 4);
+      ctx.restore();
+    }
+
+    function drawBarCanvas(canvas, items, maxAbs, title) {
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, w, h);
+      const margin = { top: 44, right: 24, bottom: 42, left: 62 };
+      const plotW = w - margin.left - margin.right;
+      const plotH = h - margin.top - margin.bottom;
+      const zeroY = margin.top + plotH / 2;
+
+      ctx.strokeStyle = "rgba(17,32,45,0.12)";
+      ctx.lineWidth = 1;
+      for (let i = -2; i <= 2; i++) {
+        const y = zeroY - i / 2 * plotH / 2;
+        ctx.beginPath();
+        ctx.moveTo(margin.left, y);
+        ctx.lineTo(w - margin.right, y);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = "rgba(17,32,45,0.45)";
+      ctx.beginPath();
+      ctx.moveTo(margin.left, zeroY);
+      ctx.lineTo(w - margin.right, zeroY);
+      ctx.stroke();
+
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 17px Aptos, Segoe UI, sans-serif";
+      ctx.fillText(title, margin.left, 26);
+
+      const gap = 24;
+      const barW = (plotW - gap * (items.length - 1)) / items.length;
+      items.forEach((item, index) => {
+        const x = margin.left + index * (barW + gap);
+        const valueH = Math.abs(item.value) / maxAbs * plotH / 2;
+        const y = item.value >= 0 ? zeroY - valueH : zeroY;
+        ctx.fillStyle = item.color;
+        drawRoundedRect(ctx, x, y, barW, Math.max(3, valueH), 8);
+        ctx.fill();
+        ctx.fillStyle = "#11202d";
+        ctx.font = "700 15px Aptos, Segoe UI, sans-serif";
+        ctx.fillText(item.label, x + 4, h - 18);
+        ctx.font = "13px Cascadia Code, Consolas, monospace";
+        ctx.fillStyle = "rgba(17,32,45,0.72)";
+        ctx.fillText(format(item.value, 3), x + 4, item.value >= 0 ? y - 8 : y + valueH + 18);
+      });
+    }
+
+    function renderFastLoopChart() {
+      const canvas = document.getElementById("fastLoopChart");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      const segments = [
+        ["ADC采样", 6, "#0b7fab"],
+        ["电流换算", 6, "#f28f3b"],
+        ["Clarke/Park", 7, "#1e9f7a"],
+        ["SMO+角度", 14, "#7f56d9"],
+        ["PID/FOC", 10, "#e04f8a"],
+        ["SVPWM", 5, "#d6a300"],
+        ["余量", 2, "#9aa7b2"]
+      ];
+      const total = 50;
+      const x0 = 42;
+      const y0 = 90;
+      const barW = w - 84;
+      const barH = 58;
+      let x = x0;
+      ctx.font = "700 18px Aptos, Segoe UI, sans-serif";
+      ctx.fillStyle = "#11202d";
+      ctx.fillText("预算示意：一个 ADC 中断内完成全部控制计算", x0, 34);
+      segments.forEach(([label, us, color]) => {
+        const width = us / total * barW;
+        ctx.fillStyle = color;
+        drawRoundedRect(ctx, x, y0, width - 3, barH, 10);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "700 13px Aptos, Segoe UI, sans-serif";
+        ctx.fillText(label, x + 10, y0 + 24);
+        ctx.font = "12px Cascadia Code, Consolas, monospace";
+        ctx.fillText(`${us} us`, x + 10, y0 + 43);
+        x += width;
+      });
+      ctx.strokeStyle = "rgba(17,32,45,0.32)";
+      ctx.beginPath();
+      ctx.moveTo(x0, y0 + barH + 34);
+      ctx.lineTo(x0 + barW, y0 + barH + 34);
+      ctx.stroke();
+      ctx.fillStyle = "#4f6476";
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("0 us", x0, y0 + barH + 58);
+      ctx.fillText("50 us / 20 kHz", x0 + barW - 92, y0 + barH + 58);
+    }
+
+    function renderSignalFlowChart() {
+      const canvas = document.getElementById("signalFlowChart");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      const nodes = [
+        ["ADC", 48, 92, "#0b7fab"],
+        ["Iabc", 170, 52, "#f28f3b"],
+        ["Ialpha/beta", 314, 52, "#1e9f7a"],
+        ["Id/Iq", 470, 52, "#e04f8a"],
+        ["SVPWM", 590, 92, "#d6a300"],
+        ["SMO", 314, 150, "#7f56d9"],
+        ["theta_e", 470, 150, "#7f56d9"]
+      ];
+      const boxW = 106;
+      const boxH = 50;
+      ctx.font = "700 15px Aptos, Segoe UI, sans-serif";
+      nodes.forEach(([label, x, y, color]) => {
+        ctx.fillStyle = color;
+        drawRoundedRect(ctx, x, y, boxW, boxH, 12);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.fillText(label, x + 14, y + 31);
+      });
+      [
+        [154, 117, 170, 77, "#0b7fab"],
+        [276, 77, 314, 77, "#1e9f7a"],
+        [420, 77, 470, 77, "#e04f8a"],
+        [576, 77, 590, 117, "#d6a300"],
+        [276, 117, 314, 175, "#7f56d9"],
+        [420, 175, 470, 175, "#7f56d9"],
+        [523, 150, 523, 104, "#7f56d9"]
+      ].forEach(([x1, y1, x2, y2, color]) => drawCanvasArrow(ctx, x1, y1, x2, y2, color));
+      ctx.fillStyle = "rgba(127,86,217,0.12)";
+      drawRoundedRect(ctx, 448, 210, 202, 30, 10);
+      ctx.fill();
+      ctx.fillStyle = "#7f56d9";
+      ctx.font = "700 12px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("θe 决定 d/q 轴位置", 468, 230);
+      ctx.fillStyle = "#4f6476";
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("电流链路给 PI 控制器，观测器链路给电角度。两条链路在 Park/反 Park 处汇合。", 42, h - 26);
+    }
+
+    function renderProfilingPulseChart() {
+      const canvas = document.getElementById("profilingPulseCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      const x0 = 58;
+      const y0 = 82;
+      const plotW = w - 112;
+      const highY = 92;
+      const lowY = 190;
+      const pulseStart = x0 + 128;
+      const pulseEnd = pulseStart + 188;
+
+      ctx.strokeStyle = "rgba(17,32,45,0.12)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 5; i++) {
+        const x = x0 + i / 5 * plotW;
+        ctx.beginPath();
+        ctx.moveTo(x, y0 - 20);
+        ctx.lineTo(x, lowY + 36);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = "#00a3a3";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(x0, lowY);
+      ctx.lineTo(pulseStart, lowY);
+      ctx.lineTo(pulseStart, highY);
+      ctx.lineTo(pulseEnd, highY);
+      ctx.lineTo(pulseEnd, lowY);
+      ctx.lineTo(x0 + plotW, lowY);
+      ctx.stroke();
+
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 17px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("GPIO_HIGH() 到 GPIO_LOW() 的宽度就是函数耗时", x0, 32);
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillStyle = "#4f6476";
+      ctx.fillText("低", 28, lowY + 4);
+      ctx.fillText("高", 28, highY + 4);
+
+      ctx.strokeStyle = "#e04f8a";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 5]);
+      ctx.beginPath();
+      ctx.moveTo(pulseStart, highY - 26);
+      ctx.lineTo(pulseStart, lowY + 28);
+      ctx.moveTo(pulseEnd, highY - 26);
+      ctx.lineTo(pulseEnd, lowY + 28);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      drawCanvasArrow(ctx, pulseStart + 12, highY - 24, pulseEnd - 12, highY - 24, "#e04f8a");
+      drawCanvasArrow(ctx, pulseEnd - 12, highY - 24, pulseStart + 12, highY - 24, "#e04f8a");
+      ctx.fillStyle = "#e04f8a";
+      ctx.font = "700 14px Cascadia Code, Consolas, monospace";
+      ctx.fillText("delta_t", pulseStart + 72, highY - 34);
+
+      ctx.fillStyle = "#4f6476";
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("示例：包住 m_observer_execute()，示波器读到 13.6 us，则记录 13.6 us。", x0, h - 24);
+    }
+
+    function renderProfilingBudgetChart() {
+      const canvas = document.getElementById("profilingBudgetCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      const rows = [
+        ["ADC+滤波", 6, 5.4, "#0b7fab"],
+        ["坐标变换", 13, 10.8, "#f28f3b"],
+        ["SMO+角度", 14, 13.6, "#7f56d9"],
+        ["FOC/PID", 10, 8.9, "#e04f8a"],
+        ["SVPWM", 5, 4.1, "#d6a300"]
+      ];
+      const x0 = 150;
+      const y0 = 58;
+      const rowH = 38;
+      const maxUs = 50;
+      const barW = w - x0 - 62;
+
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 17px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("预算值 vs 实测值记录方式", 34, 30);
+      ctx.font = "12px Aptos, Segoe UI, sans-serif";
+      ctx.fillStyle = "#4f6476";
+      ctx.fillText("浅色=预算，深色=实测示例；实际数值需要在你的板子上测。", 34, h - 18);
+
+      rows.forEach(([label, budget, measured, color], index) => {
+        const y = y0 + index * rowH;
+        ctx.fillStyle = "#11202d";
+        ctx.font = "700 13px Aptos, Segoe UI, sans-serif";
+        ctx.fillText(label, 34, y + 17);
+
+        ctx.fillStyle = color + "30";
+        drawRoundedRect(ctx, x0, y, budget / maxUs * barW, 13, 7);
+        ctx.fill();
+        ctx.fillStyle = color;
+        drawRoundedRect(ctx, x0, y + 16, measured / maxUs * barW, 13, 7);
+        ctx.fill();
+
+        ctx.fillStyle = "#4f6476";
+        ctx.font = "12px Cascadia Code, Consolas, monospace";
+        ctx.fillText(`${budget} us / ${measured} us`, x0 + budget / maxUs * barW + 8, y + 22);
+      });
+
+      const totalMeasured = rows.reduce((sum, row) => sum + row[2], 0);
+      const totalBudget = rows.reduce((sum, row) => sum + row[1], 0);
+      ctx.fillStyle = totalMeasured < 45 ? "#1e9f7a" : "#e04f8a";
+      drawRoundedRect(ctx, 34, h - 70, w - 68, 28, 10);
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.font = "700 14px Aptos, Segoe UI, sans-serif";
+      ctx.fillText(`总预算 ${totalBudget} us；实测示例 ${totalMeasured.toFixed(1)} us；建议总耗时低于 40~45 us`, 50, h - 51);
+    }
+
+    function renderProfilingCharts() {
+      renderProfilingPulseChart();
+      renderProfilingBudgetChart();
+    }
+
+    function renderClarkeConceptChart() {
+      const canvas = document.getElementById("clarkeConceptCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      const cx = w * 0.43;
+      const cy = h * 0.54;
+      const r = 104;
+      const axes = [
+        ["A / α", 0, "#0b7fab"],
+        ["B", 120, "#f28f3b"],
+        ["C", 240, "#7f56d9"]
+      ];
+
+      ctx.strokeStyle = "rgba(17,32,45,0.10)";
+      ctx.lineWidth = 1;
+      for (let i = 1; i <= 3; i++) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r * i / 3, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      axes.forEach(([label, deg, color]) => {
+        const x = cx + r * Math.cos(rad(deg));
+        const y = cy - r * Math.sin(rad(deg));
+        drawCanvasArrow(ctx, cx, cy, x, y, color);
+        ctx.fillStyle = color;
+        ctx.font = "700 14px Aptos, Segoe UI, sans-serif";
+        ctx.fillText(label, x + (x >= cx ? 8 : -42), y + 4);
+      });
+
+      const vectorAngle = 42;
+      const vx = cx + r * 0.95 * Math.cos(rad(vectorAngle));
+      const vy = cy - r * 0.95 * Math.sin(rad(vectorAngle));
+      drawCanvasArrow(ctx, cx, cy, vx, vy, "#11202d");
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 15px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("iα/iβ 合成矢量", vx + 8, vy - 8);
+
+      ctx.fillStyle = "rgba(127,86,217,0.12)";
+      drawRoundedRect(ctx, 36, 56, 250, 42, 12);
+      ctx.fill();
+      ctx.fillStyle = "#7f56d9";
+      ctx.font = "700 13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("Clarke 阶段还不用 θ；θ 从 Park 投影开始使用", 52, 82);
+
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 18px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("从三相到二维：不是丢信息，是利用 ia+ib+ic=0", 36, 34);
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillStyle = "#4f6476";
+      ctx.fillText("ia、ib、ic 三个量受 KCL 约束，真正独立的只有两个，所以能等价映射到 αβ 平面。", 36, h - 26);
+
+      const formulaX = w * 0.66;
+      ctx.fillStyle = "rgba(242,143,59,0.12)";
+      drawRoundedRect(ctx, formulaX, 78, 200, 128, 14);
+      ctx.fill();
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 15px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("Clarke 公式", formulaX + 18, 108);
+      ctx.font = "14px Cascadia Code, Consolas, monospace";
+      ctx.fillText("iα = ia", formulaX + 18, 140);
+      ctx.fillText("iβ = (ia + 2ib) / √3", formulaX + 18, 170);
+      ctx.fillText("ic = -ia - ib", formulaX + 18, 198);
+    }
+
+    function renderParkConceptChart() {
+      const canvas = document.getElementById("parkConceptCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      const cx = w * 0.43;
+      const cy = h * 0.55;
+      const r = 112;
+      const rotorAngle = 30;
+      const currentAngle = 78;
+
+      ctx.strokeStyle = "rgba(17,32,45,0.12)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+      drawCanvasArrow(ctx, cx - r - 16, cy, cx + r + 16, cy, "rgba(17,32,45,0.35)");
+      drawCanvasArrow(ctx, cx, cy + r + 16, cx, cy - r - 16, "rgba(17,32,45,0.35)");
+      ctx.fillStyle = "#4f6476";
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("α", cx + r + 22, cy + 4);
+      ctx.fillText("β", cx + 8, cy - r - 20);
+
+      const dx = cx + r * Math.cos(rad(rotorAngle));
+      const dy = cy - r * Math.sin(rad(rotorAngle));
+      const qx = cx + r * Math.cos(rad(rotorAngle + 90));
+      const qy = cy - r * Math.sin(rad(rotorAngle + 90));
+      const ix = cx + r * 0.95 * Math.cos(rad(currentAngle));
+      const iy = cy - r * 0.95 * Math.sin(rad(currentAngle));
+
+      drawCanvasArrow(ctx, cx, cy, dx, dy, "#f28f3b");
+      drawCanvasArrow(ctx, cx, cy, qx, qy, "#1e9f7a");
+      drawCanvasArrow(ctx, cx, cy, ix, iy, "#11202d");
+      drawAngleMarker(ctx, cx, cy, 42, 0, rotorAngle, "#f28f3b", "θ");
+      drawAngleMarker(ctx, cx, cy, 62, rotorAngle, rotorAngle + 90, "#1e9f7a", "90°");
+      ctx.fillStyle = "#f28f3b";
+      ctx.font = "700 14px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("d 磁链轴 = θ", dx + 8, dy + 4);
+      ctx.fillStyle = "#1e9f7a";
+      ctx.fillText("q 转矩轴 = θ + 90°", qx + 8, qy + 4);
+      ctx.fillStyle = "#11202d";
+      ctx.fillText("iα/iβ", ix + 8, iy - 8);
+
+      ctx.strokeStyle = "#e04f8a";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([7, 5]);
+      const idLen = r * 0.95 * Math.cos(rad(currentAngle - rotorAngle));
+      const iqLen = r * 0.95 * Math.sin(rad(currentAngle - rotorAngle));
+      const idX = cx + idLen * Math.cos(rad(rotorAngle));
+      const idY = cy - idLen * Math.sin(rad(rotorAngle));
+      const iqEndX = idX + iqLen * Math.cos(rad(rotorAngle + 90));
+      const iqEndY = idY - iqLen * Math.sin(rad(rotorAngle + 90));
+      ctx.beginPath();
+      ctx.moveTo(idX, idY);
+      ctx.lineTo(iqEndX, iqEndY);
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(idX, idY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 18px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("Park 的本质：求同一个矢量在 d/q 轴上的投影", 36, 34);
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillStyle = "#4f6476";
+      ctx.fillText("角度 θ 来自转子位置。θ 错，投影就错，Id/Iq 会串扰。", 36, h - 26);
+
+      const formulaX = w * 0.66;
+      ctx.fillStyle = "rgba(30,159,122,0.12)";
+      drawRoundedRect(ctx, formulaX, 76, 212, 146, 14);
+      ctx.fill();
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 15px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("Park 公式", formulaX + 18, 106);
+      ctx.font = "14px Cascadia Code, Consolas, monospace";
+      ctx.fillText("Id =  iα cosθ + iβ sinθ", formulaX + 18, 138);
+      ctx.fillText("Iq = -iα sinθ + iβ cosθ", formulaX + 18, 168);
+      ctx.fillText("θ = 转子电角度", formulaX + 18, 198);
+    }
+
+    function renderCoordinateConceptCharts() {
+      renderClarkeConceptChart();
+      renderParkConceptChart();
+    }
+
+    function renderObserverModelChart() {
+      const canvas = document.getElementById("observerModelCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 18px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("从真实电机模型到代码里的离散递推", 34, 34);
+
+      const boxes = [
+        ["连续模型", "dI/dt = -R/L·I\\n+ 1/L·(U - E)", 40, 76, 190, "#0b7fab"],
+        ["离散系数", "F = 1 - Ts·R/L\\nG = Ts/L", 272, 76, 172, "#f28f3b"],
+        ["估计电流", "i_hat[n] = F·i_hat[n-1]\\n+G·U -G·z -G·E_hat", 486, 76, 238, "#7f56d9"],
+        ["电流误差", "s = i_hat - i", 90, 216, 166, "#e04f8a"],
+        ["滑模校正", "z = K·sat(s/Smax)", 304, 216, 186, "#d6a300"],
+        ["反电势估计", "E_hat = LPF(LPF(z))", 536, 216, 186, "#1e9f7a"]
+      ];
+
+      boxes.forEach(([title, text, x, y, width, color]) => {
+        ctx.fillStyle = color;
+        drawRoundedRect(ctx, x, y, width, 78, 14);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "700 14px Aptos, Segoe UI, sans-serif";
+        ctx.fillText(title, x + 14, y + 24);
+        ctx.font = "12px Cascadia Code, Consolas, monospace";
+        text.split("\\n").forEach((line, index) => ctx.fillText(line, x + 14, y + 48 + index * 16));
+      });
+
+      [
+        [230, 115, 272, 115, "#0b7fab"],
+        [444, 115, 486, 115, "#f28f3b"],
+        [604, 154, 604, 216, "#7f56d9"],
+        [256, 255, 304, 255, "#e04f8a"],
+        [490, 255, 536, 255, "#d6a300"],
+        [630, 216, 630, 160, "#1e9f7a"]
+      ].forEach(([x1, y1, x2, y2, color]) => drawCanvasArrow(ctx, x1, y1, x2, y2, color));
+
+      ctx.fillStyle = "rgba(127,86,217,0.10)";
+      drawRoundedRect(ctx, 36, h - 62, w - 72, 44, 12);
+      ctx.fill();
+      ctx.fillStyle = "#4f6476";
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("关键思想：未知的 E 不能直接测，就让电流估计值追真实电流。", 52, h - 40);
+      ctx.fillText("追踪所需的 z 经过滤波后，就是反电势估计。", 52, h - 22);
+    }
+
+    function renderObserverVariableChart() {
+      const canvas = document.getElementById("observerVariableCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 18px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("变量生命周期：来源 -> 计算 -> 使用", 34, 34);
+
+      const nodes = [
+        ["Clarke", "Iα / Iβ", 44, 92, 148, "#f28f3b"],
+        ["SVPWM上一拍", "Uα / Uβ", 44, 214, 148, "#0b7fab"],
+        ["估计电流", "i_hat", 258, 92, 144, "#7f56d9"],
+        ["滑模校正", "s / z", 450, 92, 144, "#e04f8a"],
+        ["两级LPF", "Eα / Eβ", 450, 214, 144, "#1e9f7a"],
+        ["角度估算", "θe", 634, 214, 92, "#d6a300"]
+      ];
+      const boxH = 58;
+      nodes.forEach(([title, text, x, y, boxW, color]) => {
+        ctx.fillStyle = color;
+        drawRoundedRect(ctx, x, y, boxW, boxH, 13);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "700 13px Aptos, Segoe UI, sans-serif";
+        ctx.fillText(title, x + 12, y + 22);
+        ctx.font = "700 15px Cascadia Code, Consolas, monospace";
+        ctx.fillText(text, x + 12, y + 44);
+      });
+
+      [
+        [192, 121, 258, 121, "#f28f3b"],
+        [192, 243, 258, 139, "#0b7fab"],
+        [402, 121, 450, 121, "#7f56d9"],
+        [522, 150, 522, 214, "#e04f8a"],
+        [594, 243, 634, 243, "#1e9f7a"],
+        [634, 214, 556, 150, "#d6a300"]
+      ].forEach(([x1, y1, x2, y2, color]) => drawCanvasArrow(ctx, x1, y1, x2, y2, color));
+
+      ctx.fillStyle = "rgba(224,79,138,0.12)";
+      drawRoundedRect(ctx, 220, 282, 430, 42, 12);
+      ctx.fill();
+      ctx.fillStyle = "#e04f8a";
+      ctx.font = "700 13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("z 一方面回到估计电流方程做校正，另一方面经 LPF 变成 E_hat。", 240, 308);
+
+      ctx.fillStyle = "#4f6476";
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("代码主链路：m_observer_execute() -> m_sensorless_rotor_angle_calculate()", 34, h - 34);
+      ctx.fillText("角度输出再送到 Park / 反 Park / FOC 角度链路。", 34, h - 16);
+    }
+
+    function renderObserverDetailCharts() {
+      renderObserverModelChart();
+      renderObserverVariableChart();
+    }
+
+    function renderObserverFlowChart() {
+      const canvas = document.getElementById("observerFlowCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      const nodes = [
+        ["电压 Ualpha/beta", 40, 86, "#0b7fab"],
+        ["估计电流 i_hat", 220, 86, "#f28f3b"],
+        ["误差 s=i_hat-i", 400, 86, "#7f56d9"],
+        ["饱和函数 sat()", 580, 86, "#e04f8a"],
+        ["z 输出", 760, 86, "#d6a300"],
+        ["两级低通", 490, 176, "#1e9f7a"],
+        ["反电势 E_hat", 670, 176, "#1e9f7a"],
+        ["atan2 求角度", 820, 176, "#7f56d9"]
+      ];
+      const boxW = 132;
+      const boxH = 52;
+      ctx.font = "700 15px Aptos, Segoe UI, sans-serif";
+      nodes.forEach(([label, x, y, color]) => {
+        ctx.fillStyle = color;
+        drawRoundedRect(ctx, x, y, boxW, boxH, 13);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.fillText(label, x + 14, y + 32);
+      });
+      const arrows = [
+        [172, 112, 220, 112, "#0b7fab"],
+        [352, 112, 400, 112, "#f28f3b"],
+        [532, 112, 580, 112, "#7f56d9"],
+        [712, 112, 760, 112, "#e04f8a"],
+        [826, 138, 556, 176, "#d6a300"],
+        [622, 202, 670, 202, "#1e9f7a"],
+        [802, 202, 820, 202, "#1e9f7a"]
+      ];
+      arrows.forEach(([x1, y1, x2, y2, color]) => drawCanvasArrow(ctx, x1, y1, x2, y2, color));
+      ctx.fillStyle = "rgba(127,86,217,0.12)";
+      drawRoundedRect(ctx, 790, 36, 154, 38, 12);
+      ctx.fill();
+      ctx.fillStyle = "#7f56d9";
+      ctx.font = "700 13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("输出 θe：转子电角度", 806, 60);
+      ctx.fillStyle = "#4f6476";
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("关键调参点：K 决定 z 的最大修正能力，Smax 决定边界层宽度和线性区斜率。", 40, 40);
+    }
+
+    function renderStartupCharts() {
+      const canvas = document.getElementById("startupSpeedCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      const margin = { top: 56, right: 44, bottom: 52, left: 104 };
+      const plotW = w - margin.left - margin.right;
+      const plotH = h - margin.top - margin.bottom;
+      const stages = [
+        ["预充", 0.08, "#0b7fab"],
+        ["定位1", 0.14, "#f28f3b"],
+        ["定位2", 0.14, "#f28f3b"],
+        ["开环强拖", 0.36, "#1e9f7a"],
+        ["切闭环", 0.08, "#7f56d9"],
+        ["速度环", 0.20, "#e04f8a"]
+      ];
+      let x = margin.left;
+      stages.forEach(([label, ratio, color]) => {
+        const width = ratio * plotW;
+        ctx.fillStyle = color + "22";
+        ctx.fillRect(x, margin.top, width, plotH);
+        ctx.fillStyle = color;
+        ctx.font = "700 14px Aptos, Segoe UI, sans-serif";
+        ctx.fillText(label, x + 10, margin.top + 24);
+        x += width;
+      });
+      ctx.strokeStyle = "rgba(17,32,45,0.18)";
+      for (let i = 0; i <= 4; i++) {
+        const y = margin.top + i / 4 * plotH;
+        ctx.beginPath();
+        ctx.moveTo(margin.left, y);
+        ctx.lineTo(w - margin.right, y);
+        ctx.stroke();
+      }
+      const points = [
+        [0, 0], [0.08, 0], [0.22, 0], [0.36, 0],
+        [0.50, 0.28], [0.66, 0.56], [0.72, 0.68],
+        [0.82, 0.73], [1, 0.78]
+      ];
+      ctx.strokeStyle = "#11202d";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      points.forEach(([tx, sy], index) => {
+        const px = margin.left + tx * plotW;
+        const py = margin.top + plotH - sy * plotH;
+        if (index === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+      ctx.fillStyle = "#4f6476";
+      ctx.font = "700 13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("速度 /", 24, margin.top + 18);
+      ctx.fillText("反电势", 24, margin.top + 38);
+      ctx.fillText("可观测性", 24, margin.top + 58);
+      ctx.font = "13px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("时间", w - 70, h - 18);
+    }
+
+    function renderTuningMatrix() {
+      const canvas = document.getElementById("tuningMatrixCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, w, h);
+      const margin = { top: 38, right: 40, bottom: 54, left: 72 };
+      const plotW = w - margin.left - margin.right;
+      const plotH = h - margin.top - margin.bottom;
+      const cols = 28;
+      const rows = 18;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const smax = 40 + c / (cols - 1) * (420 - 40);
+          const k = 5000 + (rows - 1 - r) / (rows - 1) * (32767 - 5000);
+          const ratio = k / smax;
+          let color = "#dbe4ea";
+          if (ratio > 240) color = "#e04f8a";
+          else if (ratio > 140) color = "#1e9f7a";
+          else if (ratio > 70) color = "#f2b84b";
+          ctx.fillStyle = color;
+          ctx.globalAlpha = 0.78;
+          ctx.fillRect(margin.left + c * plotW / cols, margin.top + r * plotH / rows, plotW / cols + 1, plotH / rows + 1);
+        }
+      }
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = "rgba(17,32,45,0.38)";
+      ctx.strokeRect(margin.left, margin.top, plotW, plotH);
+      const defaultX = margin.left + (170 - 40) / (420 - 40) * plotW;
+      const defaultY = margin.top + (32767 - 30000) / (32767 - 5000) * plotH;
+      ctx.fillStyle = "#11202d";
+      ctx.beginPath();
+      ctx.arc(defaultX, defaultY, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = "700 14px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("工程默认点 K=30000, Smax=170", defaultX + 12, defaultY - 10);
+      ctx.fillStyle = "#11202d";
+      ctx.font = "700 16px Aptos, Segoe UI, sans-serif";
+      ctx.fillText("K", 30, margin.top + 12);
+      ctx.fillText("Smax", w - 86, h - 18);
+      const legends = [
+        ["偏软/慢", "#dbe4ea"],
+        ["可作为起点", "#f2b84b"],
+        ["较平衡", "#1e9f7a"],
+        ["偏硬/易抖", "#e04f8a"]
+      ];
+      legends.forEach(([label, color], index) => {
+        const lx = margin.left + index * 150;
+        ctx.fillStyle = color;
+        ctx.fillRect(lx, h - 34, 18, 12);
+        ctx.fillStyle = "#4f6476";
+        ctx.font = "13px Aptos, Segoe UI, sans-serif";
+        ctx.fillText(label, lx + 26, h - 24);
+      });
+    }
+
+    function renderStaticCharts() {
+      renderFastLoopChart();
+      renderSignalFlowChart();
+      renderProfilingCharts();
+      renderCoordinateConceptCharts();
+      renderObserverDetailCharts();
+      renderObserverFlowChart();
+      renderStartupCharts();
+      renderTuningMatrix();
+    }
+
+    let currentPipeline = pipelineSteps[0].key;
+    const pipelineTrack = document.getElementById("pipelineTrack");
+    const pipelineDetailMain = document.getElementById("pipelineDetailMain");
+    const pipelineDetailSide = document.getElementById("pipelineDetailSide");
+
+    function renderPipeline() {
+      pipelineTrack.innerHTML = "";
+      pipelineSteps.forEach((step) => {
+        const btn = createEl("button", "pipeline-step" + (step.key === currentPipeline ? " active" : ""));
+        btn.type = "button";
+        btn.innerHTML = `<small>${step.short}</small><strong>${step.title}</strong><span>${step.summary}</span>`;
+        btn.addEventListener("click", () => {
+          currentPipeline = step.key;
+          renderPipeline();
+        });
+        pipelineTrack.appendChild(btn);
+      });
+
+      const step = pipelineSteps.find((item) => item.key === currentPipeline);
+      pipelineDetailMain.innerHTML = `
+        <h3>${step.title}</h3>
+        <p>${step.detail}</p>
+        <div class="kv">
+          <div class="kv-row"><b>代码</b><span><code>${step.file}</code></span></div>
+          <div class="kv-row"><b>输入</b><span>${step.inputs}</span></div>
+          <div class="kv-row"><b>输出</b><span>${step.outputs}</span></div>
+        </div>
+      `;
+
+      pipelineDetailSide.innerHTML = `
+        <h3>这一步的工程意义</h3>
+        <p>${step.why}</p>
+        <div class="code-list">
+          <div class="code-line">
+            <b>调用链位置</b>
+            <code>adc0_1_irq_callback() 中按顺序串联执行</code>
+          </div>
+          <div class="code-line">
+            <b>学习建议</b>
+            <code>先理解这里的输入输出，再看相邻步骤的变量如何承接</code>
+          </div>
+        </div>
+      `;
+    }
+
+    renderPipeline();
+
+    const magRange = document.getElementById("magRange");
+    const statorAngleRange = document.getElementById("statorAngleRange");
+    const rotorAngleRange = document.getElementById("rotorAngleRange");
+    const magValue = document.getElementById("magValue");
+    const statorAngleValue = document.getElementById("statorAngleValue");
+    const rotorAngleValue = document.getElementById("rotorAngleValue");
+    const transformValues = document.getElementById("transformValues");
+    const transformCaption = document.getElementById("transformCaption");
+    const transformCanvas = document.getElementById("transformCanvas");
+    const phaseBarsCanvas = document.getElementById("phaseBarsCanvas");
+    const dqBarsCanvas = document.getElementById("dqBarsCanvas");
+    const tctx = transformCanvas.getContext("2d");
+
+    function drawArrow(ctx, fromX, fromY, toX, toY, color, width) {
+      const headLength = 12;
+      const angle = Math.atan2(toY - fromY, toX - fromX);
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function renderTransformLab() {
+      const magnitude = Number(magRange.value);
+      const statorAngle = Number(statorAngleRange.value);
+      const rotorAngle = Number(rotorAngleRange.value);
+      const alpha = magnitude * Math.cos(rad(statorAngle));
+      const beta = magnitude * Math.sin(rad(statorAngle));
+      const ia = alpha;
+      const ib = -0.5 * alpha + Math.sqrt(3) / 2 * beta;
+      const ic = -ia - ib;
+      const id = alpha * Math.cos(rad(rotorAngle)) + beta * Math.sin(rad(rotorAngle));
+      const iq = beta * Math.cos(rad(rotorAngle)) - alpha * Math.sin(rad(rotorAngle));
+      const angleDiff = ((statorAngle - rotorAngle + 540) % 360) - 180;
+
+      magValue.textContent = `${format(magnitude, 2)} pu`;
+      statorAngleValue.textContent = `${statorAngle.toFixed(0)}°`;
+      rotorAngleValue.textContent = `${rotorAngle.toFixed(0)}°`;
+
+      const valueItems = [
+        ["Ia", ia],
+        ["Ib", ib],
+        ["Ic", ic],
+        ["Ialpha", alpha],
+        ["Ibeta", beta],
+        ["Id", id],
+        ["Iq", iq],
+        ["theta_i - theta_r", angleDiff]
+      ];
+
+      transformValues.innerHTML = "";
+      valueItems.forEach(([label, value]) => {
+        const box = createEl("div", "value-box");
+        box.innerHTML = `<b>${label}</b><span>${label.includes("theta") ? value.toFixed(1) + "°" : format(value, 3)}</span>`;
+        transformValues.appendChild(box);
+      });
+
+      let caption = "如果电流矢量与 q 轴接近同向，Iq 为主、Id 接近 0，这是 FOC 最想要的工作区。";
+      if (Math.abs(id) > Math.abs(iq)) {
+        caption = "当前电流矢量更多投影到 d 轴，说明磁链分量偏大，等效地把电压能力浪费在励磁而不是转矩上。";
+      } else if (iq < 0) {
+        caption = "当前 Iq 为负，代表产生反向转矩。工程里切换 CW/CCW 时最终就是通过改变电压角和 Iq 目标符号来实现。";
+      }
+      transformCaption.textContent = caption;
+
+      tctx.clearRect(0, 0, transformCanvas.width, transformCanvas.height);
+      const w = transformCanvas.width;
+      const h = transformCanvas.height;
+      const cx = w * 0.52;
+      const cy = h * 0.54;
+      const r = Math.min(w, h) * 0.29;
+
+      tctx.save();
+      tctx.strokeStyle = "rgba(17, 32, 45, 0.10)";
+      tctx.lineWidth = 1;
+      for (let i = 0; i < 5; i++) {
+        const rr = r * (i + 1) / 5;
+        tctx.beginPath();
+        tctx.arc(cx, cy, rr, 0, Math.PI * 2);
+        tctx.stroke();
+      }
+      tctx.beginPath();
+      tctx.moveTo(cx - r - 20, cy);
+      tctx.lineTo(cx + r + 20, cy);
+      tctx.moveTo(cx, cy - r - 20);
+      tctx.lineTo(cx, cy + r + 20);
+      tctx.stroke();
+
+      tctx.fillStyle = "rgba(79, 100, 118, 0.9)";
+      tctx.font = "14px Aptos, Segoe UI, sans-serif";
+      tctx.fillText("alpha", cx + r + 8, cy - 8);
+      tctx.fillText("beta", cx + 8, cy - r - 6);
+
+      const dEndX = cx + r * 0.9 * Math.cos(rad(rotorAngle));
+      const dEndY = cy - r * 0.9 * Math.sin(rad(rotorAngle));
+      const qEndX = cx + r * 0.9 * Math.cos(rad(rotorAngle + 90));
+      const qEndY = cy - r * 0.9 * Math.sin(rad(rotorAngle + 90));
+      const iEndX = cx + r * magnitude * Math.cos(rad(statorAngle));
+      const iEndY = cy - r * magnitude * Math.sin(rad(statorAngle));
+
+      drawArrow(tctx, cx, cy, dEndX, dEndY, "#f28f3b", 3);
+      drawArrow(tctx, cx, cy, qEndX, qEndY, "#1e9f7a", 3);
+      drawArrow(tctx, cx, cy, iEndX, iEndY, "#0b7fab", 4);
+      drawAngleMarker(tctx, cx, cy, 58, 0, rotorAngle, "#f28f3b", `θ=${rotorAngle.toFixed(0)}°`);
+      drawAngleMarker(tctx, cx, cy, 78, rotorAngle, rotorAngle + 90, "#1e9f7a", "q=θ+90°");
+
+      tctx.fillStyle = "#f28f3b";
+      tctx.fillText("d轴 θ", dEndX + 8, dEndY);
+      tctx.fillStyle = "#1e9f7a";
+      tctx.fillText("q轴 θ+90°", qEndX + 8, qEndY);
+      tctx.fillStyle = "#0b7fab";
+      tctx.fillText("i", iEndX + 8, iEndY);
+
+      tctx.strokeStyle = "rgba(242, 143, 59, 0.35)";
+      tctx.beginPath();
+      tctx.arc(cx, cy, 46, -rad(rotorAngle), -rad(statorAngle), statorAngle > rotorAngle);
+      tctx.stroke();
+
+      tctx.fillStyle = "#11202d";
+      tctx.font = "15px Aptos, Segoe UI, sans-serif";
+      tctx.fillText(`相差 ${angleDiff.toFixed(1)}°`, 24, 30);
+
+      tctx.fillStyle = "rgba(17, 32, 45, 0.84)";
+      tctx.font = "14px Aptos, Segoe UI, sans-serif";
+      tctx.fillText("abc 电流由 Ialpha/Ibeta 逆 Clarke 计算，仅用于帮助理解三相与空间矢量的关系。", 24, h - 18);
+      drawBarCanvas(phaseBarsCanvas, [
+        { label: "Ia", value: ia, color: "#0b7fab" },
+        { label: "Ib", value: ib, color: "#f28f3b" },
+        { label: "Ic", value: ic, color: "#7f56d9" }
+      ], 1.25, `三相和 = ${format(ia + ib + ic, 4)}`);
+      drawBarCanvas(dqBarsCanvas, [
+        { label: "Id", value: id, color: "#f28f3b" },
+        { label: "Iq", value: iq, color: "#1e9f7a" }
+      ], 1.25, `角度差 = ${angleDiff.toFixed(1)} deg`);
+      tctx.restore();
+    }
+
+    [magRange, statorAngleRange, rotorAngleRange].forEach((input) => {
+      input.addEventListener("input", renderTransformLab);
+    });
+    renderTransformLab();
+
+    const kRange = document.getElementById("kRange");
+    const smaxRange = document.getElementById("smaxRange");
+    const errorRange = document.getElementById("errorRange");
+    const speedRange = document.getElementById("speedRange");
+    const kValue = document.getElementById("kValue");
+    const smaxValue = document.getElementById("smaxValue");
+    const errorValue = document.getElementById("errorValue");
+    const speedValue = document.getElementById("speedValue");
+    const observerReadout = document.getElementById("observerReadout");
+    const observerCanvas = document.getElementById("observerCanvas");
+    const octx = observerCanvas.getContext("2d");
+
+    function observerVerdict(k, smax, ratio, speed) {
+      if (ratio > 240 || (k > 30000 && smax < 120)) {
+        return {
+          className: "bad",
+          title: "偏硬",
+          text: "边界层内斜率过高。收敛会快，但更容易把电流采样纹波和 ADC 噪声直接打进 z，低速角度噪声通常先恶化。"
+        };
+      }
+      if (ratio < 70 || (k < 11000 && smax > 240)) {
+        return {
+          className: "warn",
+          title: "偏软",
+          text: "抖振会轻，但电流估计残差压不下去。负载变化时反电势幅值和角度更容易发钝。"
+        };
+      }
+      if (speed < 600 && smax < 100) {
+        return {
+          className: "warn",
+          title: "低速风险",
+          text: "在低速区反电势本来就弱，Smax 太小会让观测器对噪声过敏，建议先把边界层放宽。"
+        };
+      }
+      return {
+        className: "good",
+        title: "平衡区",
+        text: "对这份工程的参数尺度来说，这组 K 与 Smax 更像是可工作的起点。接下来应重点看 i_alpha_estimate 与 i_alpha 的贴合程度。"
+      };
+    }
+
+    function renderObserverLab() {
+      const k = Number(kRange.value);
+      const smax = Number(smaxRange.value);
+      const error = Number(errorRange.value);
+      const speed = Number(speedRange.value);
+      const ratio = k / smax;
+      let z = 0;
+      let mode = "线性边界层";
+      if (error > smax) {
+        z = k;
+        mode = "正饱和";
+      } else if (error < -smax) {
+        z = -k;
+        mode = "负饱和";
+      } else {
+        z = k * error / smax;
+      }
+
+      kValue.textContent = `${k}`;
+      smaxValue.textContent = `${smax}`;
+      errorValue.textContent = `${error}`;
+      speedValue.textContent = `${speed} rpm`;
+
+      const verdict = observerVerdict(k, smax, ratio, speed);
+      const rows = [
+        ["当前 z", z.toFixed(1)],
+        ["边界层斜率 K/Smax", ratio.toFixed(1)],
+        ["工作区", mode],
+        ["工程默认值", "K=30000 / Smax=170"]
+      ];
+
+      observerReadout.innerHTML = "";
+      rows.forEach(([label, value]) => {
+        const box = createEl("div", "value-box");
+        box.innerHTML = `<b>${label}</b><span>${value}</span>`;
+        observerReadout.appendChild(box);
+      });
+
+      const status = createEl("div", `status ${verdict.className}`);
+      status.innerHTML = `<b>${verdict.title}</b><span>${verdict.text}</span>`;
+      observerReadout.appendChild(status);
+
+      const secondary = createEl("div", "status");
+      secondary.innerHTML = `<b>调试口建议</b><span>优先切到 hal_entry.c 里的 observer_vofa_debug()，先看 i_alpha_estimate 与 i_alpha，再看 e_alpha_final / e_beta_final，最后再看 theta_e 与速度。</span>`;
+      observerReadout.appendChild(secondary);
+
+      octx.clearRect(0, 0, observerCanvas.width, observerCanvas.height);
+      const w = observerCanvas.width;
+      const h = observerCanvas.height;
+      const margin = { top: 30, right: 30, bottom: 44, left: 52 };
+      const plotW = w - margin.left - margin.right;
+      const plotH = h - margin.top - margin.bottom;
+      const minS = -1000;
+      const maxS = 1000;
+      const minZ = -34000;
+      const maxZ = 34000;
+
+      function xMap(x) {
+        return margin.left + (x - minS) / (maxS - minS) * plotW;
+      }
+
+      function yMap(y) {
+        return margin.top + (maxZ - y) / (maxZ - minZ) * plotH;
+      }
+
+      octx.strokeStyle = "rgba(17, 32, 45, 0.12)";
+      octx.lineWidth = 1;
+      for (let i = 0; i <= 8; i++) {
+        const gx = margin.left + i / 8 * plotW;
+        octx.beginPath();
+        octx.moveTo(gx, margin.top);
+        octx.lineTo(gx, margin.top + plotH);
+        octx.stroke();
+      }
+      for (let i = 0; i <= 6; i++) {
+        const gy = margin.top + i / 6 * plotH;
+        octx.beginPath();
+        octx.moveTo(margin.left, gy);
+        octx.lineTo(margin.left + plotW, gy);
+        octx.stroke();
+      }
+
+      octx.strokeStyle = "rgba(17, 32, 45, 0.35)";
+      octx.lineWidth = 1.4;
+      octx.beginPath();
+      octx.moveTo(xMap(minS), yMap(0));
+      octx.lineTo(xMap(maxS), yMap(0));
+      octx.moveTo(xMap(0), yMap(minZ));
+      octx.lineTo(xMap(0), yMap(maxZ));
+      octx.stroke();
+
+      octx.fillStyle = "rgba(79, 100, 118, 0.95)";
+      octx.font = "13px Aptos, Segoe UI, sans-serif";
+      octx.fillText("s 电流误差", w - 84, yMap(0) - 10);
+      octx.fillText("z 滑模输出", xMap(0) + 10, margin.top + 16);
+
+      octx.strokeStyle = "#0b7fab";
+      octx.lineWidth = 3;
+      octx.beginPath();
+      const samples = 200;
+      for (let i = 0; i <= samples; i++) {
+        const s = minS + (maxS - minS) * i / samples;
+        let curveZ = 0;
+        if (s > smax) curveZ = k;
+        else if (s < -smax) curveZ = -k;
+        else curveZ = k * s / smax;
+        const x = xMap(s);
+        const y = yMap(curveZ);
+        if (i === 0) octx.moveTo(x, y);
+        else octx.lineTo(x, y);
+      }
+      octx.stroke();
+
+      octx.strokeStyle = "rgba(242, 143, 59, 0.8)";
+      octx.setLineDash([8, 6]);
+      octx.beginPath();
+      octx.moveTo(xMap(-smax), margin.top);
+      octx.lineTo(xMap(-smax), margin.top + plotH);
+      octx.moveTo(xMap(smax), margin.top);
+      octx.lineTo(xMap(smax), margin.top + plotH);
+      octx.stroke();
+      octx.setLineDash([]);
+
+      octx.fillStyle = "#f28f3b";
+      octx.fillText(`-Smax = ${smax}`, xMap(-smax) - 52, margin.top + 18);
+      octx.fillText(`Smax = ${smax}`, xMap(smax) + 6, margin.top + 18);
+
+      octx.fillStyle = "#1e9f7a";
+      octx.beginPath();
+      octx.arc(xMap(error), yMap(z), 6, 0, Math.PI * 2);
+      octx.fill();
+      octx.fillText(`当前点: s=${error}, z=${z.toFixed(0)}`, margin.left, h - 14);
+    }
+
+    [kRange, smaxRange, errorRange, speedRange].forEach((input) => {
+      input.addEventListener("input", renderObserverLab);
+    });
+    renderObserverLab();
+
+    let currentStartup = startupSteps[0].key;
+    const startupStepsWrap = document.getElementById("startupSteps");
+    const startupDetail = document.getElementById("startupDetail");
+    const startupTimeline = document.getElementById("startupTimeline");
+
+    function renderStartup() {
+      startupStepsWrap.innerHTML = "";
+      startupSteps.forEach((step, idx) => {
+        const btn = createEl("button", "step-button" + (step.key === currentStartup ? " active" : ""));
+        btn.type = "button";
+        btn.innerHTML = `<strong>${idx + 1}. ${step.title}</strong><small>${step.time}</small>`;
+        btn.addEventListener("click", () => {
+          currentStartup = step.key;
+          renderStartup();
+        });
+        startupStepsWrap.appendChild(btn);
+      });
+
+      const step = startupSteps.find((item) => item.key === currentStartup);
+      startupDetail.innerHTML = `
+        <h3>${step.title}</h3>
+        <p>${step.purpose}</p>
+        <div class="kv">
+          <div class="kv-row"><b>持续时间</b><span>${step.time}</span></div>
+          <div class="kv-row"><b>代码</b><span><code>${step.code}</code></span></div>
+          <div class="kv-row"><b>调试重点</b><span>${step.focus}</span></div>
+        </div>
+      `;
+
+      startupTimeline.innerHTML = "";
+      startupSteps.forEach((item) => {
+        const block = createEl("div");
+        block.innerHTML = `<strong>${item.title}</strong>${item.time}`;
+        if (item.key === currentStartup) {
+          block.style.borderColor = "rgba(11, 127, 171, 0.35)";
+          block.style.background = "rgba(217, 238, 247, 0.92)";
+        }
+        startupTimeline.appendChild(block);
+      });
+    }
+
+    renderStartup();
+
+    let currentFile = fileMap[0].key;
+    const fileTabs = document.getElementById("fileTabs");
+    const fileDetail = document.getElementById("fileDetail");
+
+    function renderFiles() {
+      fileTabs.innerHTML = "";
+      fileMap.forEach((file) => {
+        const btn = createEl("button", "tab-button" + (file.key === currentFile ? " active" : ""), file.label);
+        btn.type = "button";
+        btn.addEventListener("click", () => {
+          currentFile = file.key;
+          renderFiles();
+        });
+        fileTabs.appendChild(btn);
+      });
+
+      const file = fileMap.find((item) => item.key === currentFile);
+      fileDetail.innerHTML = `
+        <h3>${file.role}</h3>
+        <p><code>${file.path}</code></p>
+        <p>${file.learn}</p>
+        <div class="code-list">
+          ${file.functions.map((fn) => `<div class="code-line"><b>关键函数</b><code>${fn}</code></div>`).join("")}
+          <div class="code-line"><b>阅读顺序建议</b><code>${file.reading}</code></div>
+        </div>
+      `;
+    }
+
+    renderFiles();
+
+    let currentBench = benchTabs[0].key;
+    const benchTabsWrap = document.getElementById("benchTabs");
+    const benchDetail = document.getElementById("benchDetail");
+
+    function renderBench() {
+      benchTabsWrap.innerHTML = "";
+      benchTabs.forEach((tab) => {
+        const btn = createEl("button", "tab-button" + (tab.key === currentBench ? " active" : ""), tab.label);
+        btn.type = "button";
+        btn.addEventListener("click", () => {
+          currentBench = tab.key;
+          renderBench();
+        });
+        benchTabsWrap.appendChild(btn);
+      });
+
+      const tab = benchTabs.find((item) => item.key === currentBench);
+      benchDetail.innerHTML = `
+        <h3>${tab.title}</h3>
+        <p>${tab.intro}</p>
+        <div class="checklist">
+          ${tab.checklist.map((item, index) => `
+            <label>
+              <input type="checkbox" data-bench="${tab.key}-${index}" ${benchState[`${tab.key}-${index}`] ? "checked" : ""}>
+              <span>${item}</span>
+            </label>
+          `).join("")}
+        </div>
+        <div class="bench-table">
+          ${tab.rows.map((row) => `
+            <div class="bench-row">
+              <b>${row[0]}</b>
+              <span>${row[1]}</span>
+              <span>${row[2]}</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      benchDetail.querySelectorAll("input[data-bench]").forEach((input) => {
+        input.addEventListener("change", (event) => {
+          benchState[event.target.dataset.bench] = event.target.checked;
+        });
+      });
+    }
+
+    renderBench();
+
+    const quizGrid = document.getElementById("quizGrid");
+
+    function renderQuiz() {
+      quizGrid.innerHTML = "";
+      quizQuestions.forEach((question, index) => {
+        const card = createEl("article", "quiz-card");
+        const title = createEl("h3", "", `${index + 1}. ${question.title}`);
+        const options = createEl("div", "quiz-options");
+
+        question.options.forEach((option, optionIndex) => {
+          const label = createEl("label", "quiz-option");
+          label.innerHTML = `
+            <input type="radio" name="quiz-${index}" value="${optionIndex}">
+            <span>${option}</span>
+          `;
+          options.appendChild(label);
+        });
+
+        const actions = createEl("div", "quiz-actions");
+        const button = createEl("button", "mini-button", "检查答案");
+        button.type = "button";
+        const feedback = createEl("div", "quiz-feedback", "选择一个选项后检查。");
+
+        button.addEventListener("click", () => {
+          const selected = card.querySelector(`input[name="quiz-${index}"]:checked`);
+          if (!selected) {
+            feedback.className = "quiz-feedback wrong";
+            feedback.textContent = "还没选。先选一个，再看结果。";
+            return;
+          }
+
+          const isCorrect = Number(selected.value) === question.answer;
+          feedback.className = `quiz-feedback ${isCorrect ? "correct" : "wrong"}`;
+          feedback.textContent = `${isCorrect ? "正确。" : "不对。"} ${question.explain}`;
+        });
+
+        actions.appendChild(button);
+        card.append(title, options, actions, feedback);
+        quizGrid.appendChild(card);
+      });
+    }
+
+    renderQuiz();
+
+    document.querySelectorAll(".jump").forEach((link) => {
+      link.addEventListener("click", () => {
+        document.querySelectorAll(".jump").forEach((item) => item.classList.remove("active"));
+        link.classList.add("active");
+      });
+    });
+
+    renderStaticCharts();
+    activatePage(location.hash.slice(1) || "overview", false);
+  </script>
+</body>
+</html>
